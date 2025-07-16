@@ -1,0 +1,16 @@
+{
+  "name": "Controle de Congressos",
+  "short_name": "Congressos",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#007bff",
+  "description": "Aplicativo para gerenciar passageiros e pagamentos de caravanas para congressos.",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "any",
+      "type": "image/png"
+    }
+  ]
+}
