@@ -133,9 +133,53 @@
         .actions .delete-btn:hover {
             background-color: #c82333;
         }
+
+        /* Estilos de Notificação */
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s, visibility 0.5s, top 0.5s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .notification.show {
+            opacity: 1;
+            visibility: visible;
+            top: 40px;
+        }
+        .notification.success {
+            background-color: #28a745;
+        }
+        .notification.error {
+            background-color: #dc3545;
+        }
+        .notification.info {
+            background-color: #007bff;
+        }
+        .notification button {
+            border: 2px solid #fff;
+            background: transparent;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
+
+    <div id="notification-area" class="notification"></div>
 
     <div class="container">
         <h1>Controle de Passageiros - Congresso</h1>
@@ -262,19 +306,41 @@
             currency: 'BRL'
         });
 
+        const notificationArea = document.getElementById('notification-area');
+        let deferredInstallPrompt = null;
+
+        function showNotification(message, type = 'info', duration = 3000, showInstallButton = false) {
+            notificationArea.textContent = message;
+            notificationArea.className = `notification ${type} show`;
+
+            if (showInstallButton && deferredInstallPrompt) {
+                const installButton = document.createElement('button');
+                installButton.textContent = 'Instalar';
+                installButton.onclick = () => {
+                    deferredInstallPrompt.prompt();
+                    notificationArea.classList.remove('show');
+                };
+                notificationArea.appendChild(installButton);
+            }
+
+            if (duration !== 0) {
+                setTimeout(() => {
+                    notificationArea.classList.remove('show');
+                }, duration);
+            }
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredInstallPrompt = e;
+            showNotification('Instale nosso app para uma melhor experiência!', 'info', 0, true);
+        });
+
         // A URL da API agora é relativa, funcionando tanto localmente quanto na Vercel.
         const API_URL = '/api/db';
 
         async function saveData() {
             try {
-                const dataToSave = {
-                    attendees: attendees,
-                    prices: {
-                        friday: prices.friday.value,
-                        saturday: prices.saturday.value,
-                        sunday: prices.sunday.value
-                    }
-                };
                 await fetch(API_URL, {
                     method: 'POST',
                     headers: {
@@ -284,7 +350,7 @@
                 });
             } catch (error) {
                 console.error('Failed to save data:', error);
-                alert('Erro ao salvar os dados. Verifique se o servidor está rodando.');
+                showNotification('Erro ao salvar os dados. Verifique a conexão.', 'error');
             }
         }
 
@@ -324,6 +390,7 @@
             for (const day in attendees) {
                 attendees[day] = attendees[day].filter(p => p.id !== passengerId);
             }
+            showNotification('Passageiro excluído com sucesso!', 'success');
             updateDisplay();
         }
 
@@ -360,11 +427,11 @@
                 .map(checkbox => checkbox.value);
 
             if (!name) {
-                alert('Por favor, insira o nome do passageiro.');
+                showNotification('Por favor, insira o nome do passageiro.', 'error');
                 return;
             }
             if (selectedDays.length === 0) {
-                alert('Por favor, selecione pelo menos um dia.');
+                showNotification('Por favor, selecione pelo menos um dia.', 'error');
                 return;
             }
 
