@@ -262,28 +262,48 @@
             currency: 'BRL'
         });
 
-        function saveData() {
-            const dataToSave = {
-                attendees: attendees,
-                prices: {
-                    friday: prices.friday.value,
-                    saturday: prices.saturday.value,
-                    sunday: prices.sunday.value
-                }
-            };
-            localStorage.setItem('congressData', JSON.stringify(dataToSave));
+        // A URL da API agora é relativa, funcionando tanto localmente quanto na Vercel.
+        const API_URL = '/api/db';
+
+        async function saveData() {
+            try {
+                const dataToSave = {
+                    attendees: attendees,
+                    prices: {
+                        friday: prices.friday.value,
+                        saturday: prices.saturday.value,
+                        sunday: prices.sunday.value
+                    }
+                };
+                await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(dataToSave),
+                });
+            } catch (error) {
+                console.error('Failed to save data:', error);
+                alert('Erro ao salvar os dados. Verifique se o servidor está rodando.');
+            }
         }
 
-        function loadData() {
-            const savedData = localStorage.getItem('congressData');
-            if (savedData) {
-                const parsedData = JSON.parse(savedData);
-                attendees = parsedData.attendees || { friday: [], saturday: [], sunday: [] };
-                if (parsedData.prices) {
-                    prices.friday.value = parsedData.prices.friday;
-                    prices.saturday.value = parsedData.prices.saturday;
-                    prices.sunday.value = parsedData.prices.sunday;
+        async function loadData() {
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
                 }
+                const data = await response.json();
+                attendees = data.attendees || { friday: [], saturday: [], sunday: [] };
+                if (data.prices) {
+                    prices.friday.value = data.prices.friday;
+                    prices.saturday.value = data.prices.saturday;
+                    prices.sunday.value = data.prices.sunday;
+                }
+            } catch (error) {
+                console.error('Failed to load data:', error);
+                // alert('Erro ao carregar os dados. Usando dados locais.');
             }
         }
 
@@ -446,9 +466,13 @@
             saveData(); // Salva os dados após cada atualização
         }
         
-        // Carrega os dados ao iniciar a página
-        loadData();
-        updateDisplay();
+        // Carrega os dados ao iniciar a página e então atualiza a tela
+        async function initialize() {
+            await loadData();
+            updateDisplay();
+        }
+
+        initialize();
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {

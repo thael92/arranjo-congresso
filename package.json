@@ -1,0 +1,26 @@
+{
+  "name": "arranjo-congressos",
+  "version": "1.0.0",
+  "description": "",
+  "main": "sw.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thael92/arranjo-congresso.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/thael92/arranjo-congresso/issues"
+  },
+  "homepage": "https://github.com/thael92/arranjo-congresso#readme",
+  "dependencies": {
+    "@vercel/kv": "^3.0.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "attendees": {
+    "friday": [],
+    "saturday": [],
+    "sunday": []
+  },
+  "prices": {
+    "friday": "50.00",
+    "saturday": "50.00",
+    "sunday": "50.00"
+  }
+}
