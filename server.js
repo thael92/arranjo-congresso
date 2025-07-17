@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const PORT = 3000;
+const PORT = 3005;
 const DB_PATH = path.join(__dirname, 'db.json');
 
 app.use(cors());
