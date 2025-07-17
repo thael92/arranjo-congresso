@@ -31,6 +31,4 @@ app.post('/db', (req, res) => {
     });
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Database server is running on http://0.0.0.0:${PORT}`);
-});
+
