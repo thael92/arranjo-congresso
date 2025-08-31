@@ -19,9 +19,8 @@
   },
   "homepage": "https://github.com/thael92/arranjo-congresso#readme",
   "dependencies": {
-    "@vercel/kv": "^3.0.0",
     "cors": "^2.8.5",
-    "express": "^5.1.0",
-    "mongoose": "^8.16.4"
+    "express": "^4.19.2",
+    "sqlite3": "^5.1.7"
   }
 }
