@@ -49,6 +49,56 @@ app.post('/api/db', async (req, res) => {
     }
 });
 
+// Rota para obter todos os participantes
+app.get('/attendees', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM attendees ORDER BY created_at DESC');
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Rota para adicionar novo participante
+app.post('/attendees', async (req, res) => {
+    const { name, friday, saturday, sunday, payment, van } = req.body;
+    try {
+        const result = await pool.query(
+            'INSERT INTO attendees (name, friday, saturday, sunday, payment, van) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+            [name, friday, saturday, sunday, payment, van]
+        );
+        res.json(result.rows[0]);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Rota para atualizar participante
+app.put('/attendees/:id', async (req, res) => {
+    const { id } = req.params;
+    const { name, friday, saturday, sunday, payment, van } = req.body;
+    try {
+        const result = await pool.query(
+            'UPDATE attendees SET name = $1, friday = $2, saturday = $3, sunday = $4, payment = $5, van = $6 WHERE id = $7 RETURNING *',
+            [name, friday, saturday, sunday, payment, van, id]
+        );
+        res.json(result.rows[0]);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Rota para deletar participante
+app.delete('/attendees/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query('DELETE FROM attendees WHERE id = $1', [id]);
+        res.json({ message: 'Participante removido com sucesso' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 const port = process.env.PORT || 3002;
 app.listen(port, () => {
   console.log(`Servidor rodando em http://localhost:${port}`);
