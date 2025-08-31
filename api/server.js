@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const db = require('./db.js');
+const pool = require('./db.js');
 
 const app = express();
 
@@ -12,50 +12,44 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '..')));
 
 // Endpoint para obter todos os dados
-app.get('/api/db', (req, res) => {
-    db.get("SELECT content FROM data ORDER BY id DESC LIMIT 1", [], (err, row) => {
-        if (err) {
-            res.status(500).send('Erro ao ler dados do banco de dados.');
-            return;
-        }
-        if (row) {
-            res.json(JSON.parse(row.content));
+app.get('/api/db', async (req, res) => {
+    try {
+        const result = await pool.query("SELECT content FROM data ORDER BY id DESC LIMIT 1");
+        if (result.rows.length > 0) {
+            res.json(JSON.parse(result.rows[0].content));
         } else {
-            // Retorna um objeto padrão se não houver dados
             res.json({
                 attendees: { friday: [], saturday: [], sunday: [] },
                 prices: { friday: '50.00', saturday: '50.00', sunday: '50.00' }
             });
         }
-    });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Erro ao ler dados do banco de dados.');
+    }
 });
 
 // Endpoint para salvar todos os dados
-app.post('/api/db', (req, res) => {
+app.post('/api/db', async (req, res) => {
     const data = req.body;
-
-    db.serialize(() => {
-        db.run("DELETE FROM data", (err) => {
-            if (err) {
-                res.status(500).send('Erro ao limpar dados no banco de dados.');
-                return;
-            }
-        });
-
-        const stmt = db.prepare("INSERT INTO data (content) VALUES (?)");
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        await client.query('DELETE FROM data');
         const dataAsString = JSON.stringify(data);
-        stmt.run(dataAsString, (err) => {
-            if (err) {
-                res.status(500).send('Erro ao salvar dados no banco de dados.');
-                return;
-            }
-            res.status(200).send('Dados salvos com sucesso no SQLite.');
-        });
-        stmt.finalize();
-    });
+        await client.query('INSERT INTO data (content) VALUES ($1)', [dataAsString]);
+        await client.query('COMMIT');
+        res.status(200).send('Dados salvos com sucesso no PostgreSQL.');
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error(err);
+        res.status(500).send('Erro ao salvar dados no banco de dados.');
+    } finally {
+        client.release();
+    }
 });
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3002;
 app.listen(port, () => {
   console.log(`Servidor rodando em http://localhost:${port}`);
 });

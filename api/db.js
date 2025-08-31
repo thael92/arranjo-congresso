@@ -1,16 +1,27 @@
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
 
-// Abre o banco de dados em um arquivo local
-const db = new sqlite3.Database('./congress_data.db', (err) => {
-    if (err) {
-        console.error('Erro ao abrir o banco de dados', err.message);
-    } else {
-        console.log('Conectado ao banco de dados SQLite.');
-        db.run(`CREATE TABLE IF NOT EXISTS data (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            content TEXT
-        )`);
-    }
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
-module.exports = db;
+const createTable = async () => {
+  const client = await pool.connect();
+  try {
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS data (
+        id SERIAL PRIMARY KEY,
+        content TEXT
+      );
+    `);
+  } finally {
+    client.release();
+  }
+};
+
+// Cria a tabela ao iniciar a aplicação
+createTable().catch(console.error);
+
+module.exports = pool;
