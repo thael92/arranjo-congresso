@@ -333,13 +333,21 @@
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredInstallPrompt = e;
-            showNotification('Instale nosso app para uma melhor experiência!', 'info', 0, true);
+            showNotification('Instale nosso app para uma melhor experiência!', 'info', 7000, true);
         });
 
         // A URL da API agora é relativa, funcionando tanto localmente quanto na Vercel.
         const API_URL = '/api/db';
 
         async function saveData() {
+            const dataToSave = {
+                attendees: attendees,
+                prices: {
+                    friday: prices.friday.value,
+                    saturday: prices.saturday.value,
+                    sunday: prices.sunday.value
+                }
+            };
             try {
                 await fetch(API_URL, {
                     method: 'POST',

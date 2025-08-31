@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const db = require('./db.js');
 
 const app = express();
@@ -7,15 +8,25 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Serve os arquivos estáticos da pasta raiz do projeto
+app.use(express.static(path.join(__dirname, '..')));
+
 // Endpoint para obter todos os dados
 app.get('/api/db', (req, res) => {
-    db.all("SELECT content FROM data", [], (err, rows) => {
+    db.get("SELECT content FROM data ORDER BY id DESC LIMIT 1", [], (err, row) => {
         if (err) {
             res.status(500).send('Erro ao ler dados do banco de dados.');
             return;
         }
-        const data = rows.map(row => JSON.parse(row.content));
-        res.json(data);
+        if (row) {
+            res.json(JSON.parse(row.content));
+        } else {
+            // Retorna um objeto padrão se não houver dados
+            res.json({
+                attendees: { friday: [], saturday: [], sunday: [] },
+                prices: { friday: '50.00', saturday: '50.00', sunday: '50.00' }
+            });
+        }
     });
 });
 
@@ -44,5 +55,7 @@ app.post('/api/db', (req, res) => {
     });
 });
 
-// Exporta o app Express para ser usado como uma função serverless
-module.exports = app;
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Servidor rodando em http://localhost:${port}`);
+});
