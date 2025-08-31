@@ -1,16 +1,26 @@
 {
-  "name": "Controle de Congressos",
+  "name": "Gerenciador de Congressos",
   "short_name": "Congressos",
-  "start_url": ".",
+  "description": "Aplicativo para gerenciar participantes de congressos",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#007bff",
-  "description": "Aplicativo para gerenciar passageiros e pagamentos de caravanas para congressos.",
+  "theme_color": "#4CAF50",
   "icons": [
     {
-      "src": "logo.png",
-      "sizes": "any",
+      "src": "icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512x512.png",
+      "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "serviceworker": {
+    "src": "sw.js",
+    "scope": "/",
+    "use_cache": true
+  }
 }
