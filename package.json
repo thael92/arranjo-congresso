@@ -23,8 +23,11 @@
   },
   "homepage": "https://github.com/thael92/arranjo-congresso#readme",
   "dependencies": {
+    "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "express": "^4.19.2",
-    "pg": "^8.16.3"
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.16.3",
+    "sqlite3": "^5.1.7"
   }
 }
