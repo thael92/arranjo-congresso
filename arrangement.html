@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seleção de Arranjo</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #1c1e21;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Seleção de Arranjo</h1>
+        <div class="form-group">
+            <label for="event-type">Tipo de Evento</label>
+            <select class="form-control" id="event-type">
+                <option value="congress">Congresso (3 dias)</option>
+                <option value="assembly">Assembleia (Domingo)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="vehicle-type">Tipo de Veículo</label>
+            <select class="form-control" id="vehicle-type">
+                <option value="van">Van</option>
+                <option value="bus">Ônibus</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="seat-count">Quantidade de Lugares</label>
+            <input type="number" class="form-control" id="seat-count" min="1" value="16">
+        </div>
+        <div class="form-group" id="single-date-group">
+            <label for="event-date" id="event-date-label">Data da Assembleia (Domingo)</label>
+            <input type="date" class="form-control" id="event-date">
+            <small class="form-text text-muted" id="date-help">Selecione um domingo para a assembleia</small>
+        </div>
+
+        <div class="form-group" id="congress-dates-group" style="display: none;">
+            <label>Datas do Congresso (3 dias)</label>
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="friday-date">Sexta-feira:</label>
+                    <input type="date" class="form-control" id="friday-date">
+                </div>
+                <div class="col-md-4">
+                    <label for="saturday-date">Sábado:</label>
+                    <input type="date" class="form-control" id="saturday-date">
+                </div>
+                <div class="col-md-4">
+                    <label for="sunday-date">Domingo:</label>
+                    <input type="date" class="form-control" id="sunday-date">
+                </div>
+            </div>
+            <small class="form-text text-muted">Selecione as três datas do congresso</small>
+        </div>
+
+        <div class="form-group" id="event-dates-display" style="display: none;">
+            <label>Datas Selecionadas:</label>
+            <div id="dates-list" class="alert alert-info"></div>
+        </div>
+        <button class="btn btn-primary" id="save-arrangement">Salvar Arranjo</button>
+    </div>
+
+    <script>
+        const eventTypeSelect = document.getElementById('event-type');
+        const singleDateGroup = document.getElementById('single-date-group');
+        const congressDatesGroup = document.getElementById('congress-dates-group');
+        const eventDateInput = document.getElementById('event-date');
+        const fridayDateInput = document.getElementById('friday-date');
+        const saturdayDateInput = document.getElementById('saturday-date');
+        const sundayDateInput = document.getElementById('sunday-date');
+        const eventDatesDisplay = document.getElementById('event-dates-display');
+        const datesList = document.getElementById('dates-list');
+
+        const diasSemana = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+
+        function formatarData(data) {
+            const dia = data.getDate().toString().padStart(2, '0');
+            const mes = (data.getMonth() + 1).toString().padStart(2, '0');
+            const ano = data.getFullYear();
+            const diaSemana = diasSemana[data.getDay()];
+            return `${diaSemana}, ${dia}/${mes}/${ano}`;
+        }
+
+        function ajustarCalendario() {
+            const tipoEvento = eventTypeSelect.value;
+
+            // Limpa os campos
+            eventDateInput.value = '';
+            fridayDateInput.value = '';
+            saturdayDateInput.value = '';
+            sundayDateInput.value = '';
+            eventDatesDisplay.style.display = 'none';
+
+            if (tipoEvento === 'assembly') {
+                singleDateGroup.style.display = 'block';
+                congressDatesGroup.style.display = 'none';
+                document.getElementById('event-date-label').textContent = 'Data da Assembleia (Domingo)';
+                document.getElementById('date-help').textContent = 'Selecione um domingo para a assembleia';
+            } else {
+                singleDateGroup.style.display = 'none';
+                congressDatesGroup.style.display = 'block';
+            }
+        }
+
+        function mostrarDatasEvento() {
+            const tipoEvento = eventTypeSelect.value;
+
+            if (tipoEvento === 'assembly') {
+                if (eventDateInput.value) {
+                    const data = new Date(eventDateInput.value + 'T00:00:00');
+                    datesList.innerHTML = `<strong>Assembleia:</strong><br>${formatarData(data)}`;
+                    eventDatesDisplay.style.display = 'block';
+                } else {
+                    eventDatesDisplay.style.display = 'none';
+                }
+            } else {
+                if (fridayDateInput.value || saturdayDateInput.value || sundayDateInput.value) {
+                    let datesHtml = '<strong>Congresso:</strong><br>';
+
+                    if (fridayDateInput.value) {
+                        const sexta = new Date(fridayDateInput.value + 'T00:00:00');
+                        datesHtml += `• Sexta: ${formatarData(sexta)}<br>`;
+                    }
+                    if (saturdayDateInput.value) {
+                        const sabado = new Date(saturdayDateInput.value + 'T00:00:00');
+                        datesHtml += `• Sábado: ${formatarData(sabado)}<br>`;
+                    }
+                    if (sundayDateInput.value) {
+                        const domingo = new Date(sundayDateInput.value + 'T00:00:00');
+                        datesHtml += `• Domingo: ${formatarData(domingo)}`;
+                    }
+
+                    datesList.innerHTML = datesHtml;
+                    eventDatesDisplay.style.display = 'block';
+                } else {
+                    eventDatesDisplay.style.display = 'none';
+                }
+            }
+        }
+
+        // Validação para assembleia (apenas domingos)
+        eventDateInput.addEventListener('input', (e) => {
+            if (e.target.value) {
+                const dataSelecionada = new Date(e.target.value + 'T00:00:00');
+                const diaDaSemana = dataSelecionada.getDay();
+
+                if (diaDaSemana !== 0) {
+                    alert('Para Assembleia, por favor, selecione um Domingo.');
+                    e.target.value = '';
+                    eventDatesDisplay.style.display = 'none';
+                    return;
+                }
+            }
+            mostrarDatasEvento();
+        });
+
+        // Validações para congresso
+        fridayDateInput.addEventListener('input', (e) => {
+            if (e.target.value) {
+                const dataSelecionada = new Date(e.target.value + 'T00:00:00');
+                const diaDaSemana = dataSelecionada.getDay();
+
+                if (diaDaSemana !== 5) {
+                    alert('Para Sexta-feira, por favor, selecione uma Sexta.');
+                    e.target.value = '';
+                    return;
+                }
+            }
+            mostrarDatasEvento();
+        });
+
+        saturdayDateInput.addEventListener('input', (e) => {
+            if (e.target.value) {
+                const dataSelecionada = new Date(e.target.value + 'T00:00:00');
+                const diaDaSemana = dataSelecionada.getDay();
+
+                if (diaDaSemana !== 6) {
+                    alert('Para Sábado, por favor, selecione um Sábado.');
+                    e.target.value = '';
+                    return;
+                }
+            }
+            mostrarDatasEvento();
+        });
+
+        sundayDateInput.addEventListener('input', (e) => {
+            if (e.target.value) {
+                const dataSelecionada = new Date(e.target.value + 'T00:00:00');
+                const diaDaSemana = dataSelecionada.getDay();
+
+                if (diaDaSemana !== 0) {
+                    alert('Para Domingo, por favor, selecione um Domingo.');
+                    e.target.value = '';
+                    return;
+                }
+            }
+            mostrarDatasEvento();
+        });
+
+        eventTypeSelect.addEventListener('change', ajustarCalendario);
+
+        document.getElementById('save-arrangement').addEventListener('click', () => {
+            const eventType = eventTypeSelect.value;
+            const vehicleType = document.getElementById('vehicle-type').value;
+            const seatCount = document.getElementById('seat-count').value;
+
+            let arrangement = {
+                eventType,
+                vehicleType,
+                seatCount
+            };
+
+            if (eventType === 'assembly') {
+                if (!eventDateInput.value) {
+                    alert('Por favor, selecione a data da assembleia.');
+                    return;
+                }
+                arrangement.eventDate = eventDateInput.value;
+                arrangement.dates = [{ date: eventDateInput.value, day: 'sunday', label: 'Assembleia' }];
+            } else {
+                if (!fridayDateInput.value || !saturdayDateInput.value || !sundayDateInput.value) {
+                    alert('Por favor, selecione todas as três datas do congresso.');
+                    return;
+                }
+                arrangement.dates = [
+                    { date: fridayDateInput.value, day: 'friday', label: 'Sexta-feira' },
+                    { date: saturdayDateInput.value, day: 'saturday', label: 'Sábado' },
+                    { date: sundayDateInput.value, day: 'sunday', label: 'Domingo' }
+                ];
+                arrangement.eventDate = fridayDateInput.value; // Para compatibilidade
+            }
+
+            localStorage.setItem('arrangement', JSON.stringify(arrangement));
+            alert('Arranjo salvo com sucesso!');
+            window.location.href = 'index.html';
+        });
+
+        // Ajusta o calendário ao carregar a página
+        ajustarCalendario();
+    </script>
+</body>
+</html>
