@@ -1,26 +1,26 @@
 {
-  "name": "Gerenciador de Congressos",
+  "name": "Sistema de Controle de Congressos",
   "short_name": "Congressos",
-  "description": "Aplicativo para gerenciar participantes de congressos",
+  "description": "Organize o transporte para congressos e assembleias de forma simples e eficiente",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#4CAF50",
+  "theme_color": "#007bff",
+  "orientation": "portrait",
+  "scope": "/",
+  "categories": ["business", "productivity"],
   "icons": [
     {
-      "src": "icons/icon-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png"
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     },
     {
-      "src": "icons/icon-512x512.png",
+      "src": "logo.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
-  ],
-  "serviceworker": {
-    "src": "sw.js",
-    "scope": "/",
-    "use_cache": true
-  }
+  ]
 }

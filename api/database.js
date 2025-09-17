@@ -8,23 +8,40 @@ const db = new sqlite3.Database(dbPath);
 const initDB = () => {
     return new Promise((resolve, reject) => {
         db.serialize(() => {
-            // Tabela para dados gerais (compatibilidade com sistema antigo)
-            db.run(`CREATE TABLE IF NOT EXISTS data (
+            // Tabela de eventos (congressos/assembleias)
+            db.run(`CREATE TABLE IF NOT EXISTS events (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                content TEXT NOT NULL,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                congregation_id INTEGER NOT NULL,
+                year INTEGER NOT NULL,
+                event_type VARCHAR(20) NOT NULL CHECK(event_type IN ('congress', 'assembly')),
+                event_name VARCHAR(100) NOT NULL,
+                dates TEXT NOT NULL,
+                vehicle_type VARCHAR(20) NOT NULL CHECK(vehicle_type IN ('van', 'bus')),
+                seat_count INTEGER DEFAULT 16,
+                attendees_data TEXT NOT NULL,
+                prices TEXT NOT NULL,
+                status VARCHAR(20) DEFAULT 'active' CHECK(status IN ('active', 'completed', 'cancelled')),
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (congregation_id) REFERENCES congregations (id)
             )`);
 
-            // Tabela de participantes
-            db.run(`CREATE TABLE IF NOT EXISTS attendees (
+            // Tabela de passageiros
+            db.run(`CREATE TABLE IF NOT EXISTS passengers (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                event_id INTEGER NOT NULL,
                 name VARCHAR(100) NOT NULL,
-                friday BOOLEAN DEFAULT 0,
-                saturday BOOLEAN DEFAULT 0,
-                sunday BOOLEAN DEFAULT 0,
-                payment REAL DEFAULT 0,
-                van BOOLEAN DEFAULT 0,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                amount_paid DECIMAL(10,2) DEFAULT 0,
+                total_owed DECIMAL(10,2) NOT NULL,
+                days_attending TEXT NOT NULL,
+                payment_status VARCHAR(20) DEFAULT 'pending' CHECK(payment_status IN ('pending', 'partial', 'paid')),
+                seat_assigned INTEGER,
+                phone VARCHAR(20),
+                email VARCHAR(100),
+                notes TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (event_id) REFERENCES events (id) ON DELETE CASCADE
             )`);
 
             // Tabela de congregações

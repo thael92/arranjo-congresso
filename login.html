@@ -4,262 +4,118 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Controle de Congressos</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .login-container {
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
-
-        .logo {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        h1 {
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 24px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: #555;
-            font-weight: 500;
-        }
-
-        input[type="email"], input[type="password"] {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e1e1e1;
-            border-radius: 5px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-            box-sizing: border-box;
-        }
-
-        input[type="email"]:focus, input[type="password"]:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: transform 0.2s;
-            margin-bottom: 15px;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .link-btn {
-            background: transparent;
-            color: #667eea;
-            text-decoration: none;
-            font-size: 14px;
-            display: inline-block;
-            padding: 10px;
-            margin-top: 10px;
-        }
-
-        .link-btn:hover {
-            text-decoration: underline;
-        }
-
-        .error-message {
-            background: #fee;
-            color: #c33;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-
-        .success-message {
-            background: #efe;
-            color: #363;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-
-        .loading {
-            display: none;
-            margin: 10px 0;
-        }
-
-        .loading::after {
-            content: "";
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#007bff">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="stylesheet" href="assets/css/main.css">
 </head>
-<body>
-    <div class="login-container">
-        <div class="logo">🏛️</div>
-        <h1>Login</h1>
-        
+<body class="d-flex justify-center align-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div class="container text-center" style="max-width: 450px;">
+        <div class="logo-professional">
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" stroke="#007bff" stroke-width="2"/>
+                <polyline points="10,17 15,12 10,7" stroke="#007bff" stroke-width="2"/>
+                <line x1="15" y1="12" x2="3" y2="12" stroke="#007bff" stroke-width="2"/>
+            </svg>
+        </div>
+        <h1>Login da Congregação</h1>
+
+        <div class="info-box">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="#1565c0" stroke-width="2"/>
+                    <circle cx="12" cy="16" r="1" fill="#1565c0"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="#1565c0" stroke-width="2"/>
+                </svg>
+                <strong>Acesso Seguro</strong>
+            </div>
+            Use as credenciais da sua congregação para acessar o sistema de controle de passageiros.
+        </div>
+
         <div id="message-area"></div>
         
         <form id="login-form">
-            <div class="form-group">
+            <div class="form-group text-left">
                 <label for="email">Email da Congregação:</label>
                 <input type="email" id="email" name="email" required>
             </div>
             
-            <div class="form-group">
+            <div class="form-group text-left">
                 <label for="password">Senha:</label>
                 <input type="password" id="password" name="password" required>
             </div>
             
-            <button type="submit" class="btn" id="login-btn">Entrar</button>
+            <button type="submit" class="btn btn-primary" id="login-btn">Entrar</button>
             <div class="loading" id="loading"></div>
         </form>
         
-        <p>
-            <a href="register.html" class="link-btn">Não tem conta? Cadastre sua congregação</a>
-        </p>
+        <div class="text-center" style="margin-top: 1rem;">
+            <p><a href="#" id="forgot-password-link" class="link-btn">Esqueci minha senha</a></p>
+            <p><a href="register.html" class="link-btn">Não tem conta? Cadastre sua congregação</a></p>
+        </div>
     </div>
 
+    <!-- Modal Esqueci Senha -->
+    <div id="forgot-password-modal" class="modal-overlay" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    ">
+        <div class="modal-content" style="background: white; padding: 2rem; border-radius: 8px; max-width: 400px; width: 90%;">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="#007bff" stroke-width="2"/>
+                    <polyline points="22,6 12,13 2,6" stroke="#007bff" stroke-width="2"/>
+                </svg>
+                <h3>Recuperar Senha</h3>
+            </div>
+
+            <p>Entre em contato com o administrador do sistema para redefinir sua senha:</p>
+
+            <div class="info-box" style="text-align: left; margin: 1rem 0;">
+                <strong>📧 Email:</strong> suporte@sistemacongressos.com<br>
+                <strong>📱 WhatsApp:</strong> (11) 99999-9999<br><br>
+                <strong>Informe:</strong><br>
+                • Nome da sua congregação<br>
+                • Email de cadastro<br>
+                • Motivo da solicitação
+            </div>
+
+            <button id="close-forgot-modal" class="btn btn-secondary" style="width: 100%;">Fechar</button>
+        </div>
+    </div>
+
+    <script src="assets/js/login.js"></script>
+
     <script>
-        const loginForm = document.getElementById('login-form');
-        const messageArea = document.getElementById('message-area');
-        const loginBtn = document.getElementById('login-btn');
-        const loading = document.getElementById('loading');
+        // Funcionalidade do modal "Esqueci minha senha"
+        document.addEventListener('DOMContentLoaded', () => {
+            const forgotLink = document.getElementById('forgot-password-link');
+            const forgotModal = document.getElementById('forgot-password-modal');
+            const closeModal = document.getElementById('close-forgot-modal');
 
-        function showMessage(message, type = 'error') {
-            messageArea.innerHTML = `<div class="${type}-message">${message}</div>`;
-        }
-
-        function setLoading(isLoading) {
-            loginBtn.disabled = isLoading;
-            loading.style.display = isLoading ? 'block' : 'none';
-            loginBtn.textContent = isLoading ? 'Entrando...' : 'Entrar';
-        }
-
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
-            if (!email || !password) {
-                showMessage('Por favor, preencha todos os campos.');
-                return;
-            }
-
-            setLoading(true);
-            messageArea.innerHTML = '';
-
-            try {
-                const response = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ email, password }),
+            if (forgotLink && forgotModal && closeModal) {
+                forgotLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    forgotModal.style.display = 'flex';
                 });
 
-                const data = await response.json();
+                closeModal.addEventListener('click', () => {
+                    forgotModal.style.display = 'none';
+                });
 
-                if (response.ok) {
-                    // Salvar token no localStorage
-                    localStorage.setItem('auth_token', data.token);
-                    localStorage.setItem('congregation', JSON.stringify(data.congregation));
-                    
-                    showMessage('Login realizado com sucesso! Redirecionando...', 'success');
-                    
-                    // Redirecionar para a página principal
-                    setTimeout(() => {
-                        window.location.href = '/';
-                    }, 1500);
-                } else {
-                    showMessage(data.error || 'Erro ao fazer login');
-                }
-            } catch (error) {
-                console.error('Erro:', error);
-                showMessage('Erro de conexão. Tente novamente.');
-            } finally {
-                setLoading(false);
-            }
-        });
-
-        // Verificar se já está logado
-        window.addEventListener('load', () => {
-            const token = localStorage.getItem('auth_token');
-            if (token) {
-                // Verificar se o token ainda é válido
-                fetch('/api/me', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
+                // Fechar ao clicar fora
+                forgotModal.addEventListener('click', (e) => {
+                    if (e.target === forgotModal) {
+                        forgotModal.style.display = 'none';
                     }
-                })
-                .then(response => {
-                    if (response.ok) {
-                        window.location.href = '/';
-                    }
-                })
-                .catch(() => {
-                    // Token inválido, remover
-                    localStorage.removeItem('auth_token');
-                    localStorage.removeItem('congregation');
                 });
             }
         });

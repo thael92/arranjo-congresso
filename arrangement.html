@@ -3,38 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seleção de Arranjo</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f0f2f5;
-            color: #1c1e21;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .container {
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 800px;
-        }
-        h1 {
-            color: #333;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 10px;
-            margin-top: 0;
-        }
-    </style>
+    <title>Configuração de Evento - Controle de Congressos</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#007bff">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="stylesheet" href="assets/css/main.css">
 </head>
-<body>
-    <div class="container">
-        <h1>Seleção de Arranjo</h1>
+<body class="d-flex justify-center align-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div id="notification-area"></div>
+
+    <div class="container" style="max-width: 800px;">
+        <div class="text-center mb-4">
+            <div class="logo-professional">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="3" stroke="#007bff" stroke-width="2"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="#007bff" stroke-width="2"/>
+                </svg>
+            </div>
+            <h1>Configuração de Evento</h1>
+        </div>
+
+        <div class="info-box">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="#1565c0" stroke-width="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6" stroke="#1565c0" stroke-width="2"/>
+                    <line x1="8" y1="2" x2="8" y2="6" stroke="#1565c0" stroke-width="2"/>
+                    <line x1="3" y1="10" x2="21" y2="10" stroke="#1565c0" stroke-width="2"/>
+                </svg>
+                <strong>Configuração do Evento</strong>
+            </div>
+            Configure os detalhes do seu evento (congressos de 3 dias ou assembleias de 1 dia) e defina o tipo de transporte.
+            <div id="selected-year-info" style="margin-top: 0.5rem; padding: 0.5rem; background: rgba(0,123,255,0.1); border-radius: 4px; display: none;">
+                <strong>📅 Ano selecionado:</strong> <span id="selected-year-display"></span>
+            </div>
+        </div>
         <div class="form-group">
             <label for="event-type">Tipo de Evento</label>
             <select class="form-control" id="event-type">
@@ -62,15 +65,15 @@
         <div class="form-group" id="congress-dates-group" style="display: none;">
             <label>Datas do Congresso (3 dias)</label>
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-4">
                     <label for="friday-date">Sexta-feira:</label>
                     <input type="date" class="form-control" id="friday-date">
                 </div>
-                <div class="col-md-4">
+                <div class="col-4">
                     <label for="saturday-date">Sábado:</label>
                     <input type="date" class="form-control" id="saturday-date">
                 </div>
-                <div class="col-md-4">
+                <div class="col-4">
                     <label for="sunday-date">Domingo:</label>
                     <input type="date" class="form-control" id="sunday-date">
                 </div>
@@ -85,183 +88,6 @@
         <button class="btn btn-primary" id="save-arrangement">Salvar Arranjo</button>
     </div>
 
-    <script>
-        const eventTypeSelect = document.getElementById('event-type');
-        const singleDateGroup = document.getElementById('single-date-group');
-        const congressDatesGroup = document.getElementById('congress-dates-group');
-        const eventDateInput = document.getElementById('event-date');
-        const fridayDateInput = document.getElementById('friday-date');
-        const saturdayDateInput = document.getElementById('saturday-date');
-        const sundayDateInput = document.getElementById('sunday-date');
-        const eventDatesDisplay = document.getElementById('event-dates-display');
-        const datesList = document.getElementById('dates-list');
-
-        const diasSemana = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
-
-        function formatarData(data) {
-            const dia = data.getDate().toString().padStart(2, '0');
-            const mes = (data.getMonth() + 1).toString().padStart(2, '0');
-            const ano = data.getFullYear();
-            const diaSemana = diasSemana[data.getDay()];
-            return `${diaSemana}, ${dia}/${mes}/${ano}`;
-        }
-
-        function ajustarCalendario() {
-            const tipoEvento = eventTypeSelect.value;
-
-            // Limpa os campos
-            eventDateInput.value = '';
-            fridayDateInput.value = '';
-            saturdayDateInput.value = '';
-            sundayDateInput.value = '';
-            eventDatesDisplay.style.display = 'none';
-
-            if (tipoEvento === 'assembly') {
-                singleDateGroup.style.display = 'block';
-                congressDatesGroup.style.display = 'none';
-                document.getElementById('event-date-label').textContent = 'Data da Assembleia (Domingo)';
-                document.getElementById('date-help').textContent = 'Selecione um domingo para a assembleia';
-            } else {
-                singleDateGroup.style.display = 'none';
-                congressDatesGroup.style.display = 'block';
-            }
-        }
-
-        function mostrarDatasEvento() {
-            const tipoEvento = eventTypeSelect.value;
-
-            if (tipoEvento === 'assembly') {
-                if (eventDateInput.value) {
-                    const data = new Date(eventDateInput.value + 'T00:00:00');
-                    datesList.innerHTML = `<strong>Assembleia:</strong><br>${formatarData(data)}`;
-                    eventDatesDisplay.style.display = 'block';
-                } else {
-                    eventDatesDisplay.style.display = 'none';
-                }
-            } else {
-                if (fridayDateInput.value || saturdayDateInput.value || sundayDateInput.value) {
-                    let datesHtml = '<strong>Congresso:</strong><br>';
-
-                    if (fridayDateInput.value) {
-                        const sexta = new Date(fridayDateInput.value + 'T00:00:00');
-                        datesHtml += `• Sexta: ${formatarData(sexta)}<br>`;
-                    }
-                    if (saturdayDateInput.value) {
-                        const sabado = new Date(saturdayDateInput.value + 'T00:00:00');
-                        datesHtml += `• Sábado: ${formatarData(sabado)}<br>`;
-                    }
-                    if (sundayDateInput.value) {
-                        const domingo = new Date(sundayDateInput.value + 'T00:00:00');
-                        datesHtml += `• Domingo: ${formatarData(domingo)}`;
-                    }
-
-                    datesList.innerHTML = datesHtml;
-                    eventDatesDisplay.style.display = 'block';
-                } else {
-                    eventDatesDisplay.style.display = 'none';
-                }
-            }
-        }
-
-        // Validação para assembleia (apenas domingos)
-        eventDateInput.addEventListener('input', (e) => {
-            if (e.target.value) {
-                const dataSelecionada = new Date(e.target.value + 'T00:00:00');
-                const diaDaSemana = dataSelecionada.getDay();
-
-                if (diaDaSemana !== 0) {
-                    alert('Para Assembleia, por favor, selecione um Domingo.');
-                    e.target.value = '';
-                    eventDatesDisplay.style.display = 'none';
-                    return;
-                }
-            }
-            mostrarDatasEvento();
-        });
-
-        // Validações para congresso
-        fridayDateInput.addEventListener('input', (e) => {
-            if (e.target.value) {
-                const dataSelecionada = new Date(e.target.value + 'T00:00:00');
-                const diaDaSemana = dataSelecionada.getDay();
-
-                if (diaDaSemana !== 5) {
-                    alert('Para Sexta-feira, por favor, selecione uma Sexta.');
-                    e.target.value = '';
-                    return;
-                }
-            }
-            mostrarDatasEvento();
-        });
-
-        saturdayDateInput.addEventListener('input', (e) => {
-            if (e.target.value) {
-                const dataSelecionada = new Date(e.target.value + 'T00:00:00');
-                const diaDaSemana = dataSelecionada.getDay();
-
-                if (diaDaSemana !== 6) {
-                    alert('Para Sábado, por favor, selecione um Sábado.');
-                    e.target.value = '';
-                    return;
-                }
-            }
-            mostrarDatasEvento();
-        });
-
-        sundayDateInput.addEventListener('input', (e) => {
-            if (e.target.value) {
-                const dataSelecionada = new Date(e.target.value + 'T00:00:00');
-                const diaDaSemana = dataSelecionada.getDay();
-
-                if (diaDaSemana !== 0) {
-                    alert('Para Domingo, por favor, selecione um Domingo.');
-                    e.target.value = '';
-                    return;
-                }
-            }
-            mostrarDatasEvento();
-        });
-
-        eventTypeSelect.addEventListener('change', ajustarCalendario);
-
-        document.getElementById('save-arrangement').addEventListener('click', () => {
-            const eventType = eventTypeSelect.value;
-            const vehicleType = document.getElementById('vehicle-type').value;
-            const seatCount = document.getElementById('seat-count').value;
-
-            let arrangement = {
-                eventType,
-                vehicleType,
-                seatCount
-            };
-
-            if (eventType === 'assembly') {
-                if (!eventDateInput.value) {
-                    alert('Por favor, selecione a data da assembleia.');
-                    return;
-                }
-                arrangement.eventDate = eventDateInput.value;
-                arrangement.dates = [{ date: eventDateInput.value, day: 'sunday', label: 'Assembleia' }];
-            } else {
-                if (!fridayDateInput.value || !saturdayDateInput.value || !sundayDateInput.value) {
-                    alert('Por favor, selecione todas as três datas do congresso.');
-                    return;
-                }
-                arrangement.dates = [
-                    { date: fridayDateInput.value, day: 'friday', label: 'Sexta-feira' },
-                    { date: saturdayDateInput.value, day: 'saturday', label: 'Sábado' },
-                    { date: sundayDateInput.value, day: 'sunday', label: 'Domingo' }
-                ];
-                arrangement.eventDate = fridayDateInput.value; // Para compatibilidade
-            }
-
-            localStorage.setItem('arrangement', JSON.stringify(arrangement));
-            alert('Arranjo salvo com sucesso!');
-            window.location.href = 'index.html';
-        });
-
-        // Ajusta o calendário ao carregar a página
-        ajustarCalendario();
-    </script>
+    <script src="assets/js/arrangement.js"></script>
 </body>
 </html>

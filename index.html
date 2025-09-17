@@ -3,210 +3,211 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controle de Passageiros para o Congresso</title>
+    <title>Sistema de Controle de Congressos</title>
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#4CAF50">
+    <meta name="theme-color" content="#007bff">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f0f2f5;
-            color: #1c1e21;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .container {
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 800px;
-        }
-        h1, h2 {
-            color: #333;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 10px;
-            margin-top: 0;
-        }
-        .form-section {
-            margin-bottom: 20px;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-        input[type="text"], input[type="number"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .checkbox-group label {
-            display: inline-block;
-            margin-right: 15px;
-            font-weight: normal;
-        }
-        button {
-            background-color: #007bff;
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .results-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 20px;
-        }
-        .day-column {
-            background-color: #f9f9f9;
-            padding: 15px;
-            border-radius: 6px;
-            border: 1px solid #e0e0e0;
-        }
-        .day-column h3 {
-            margin-top: 0;
-            color: #007bff;
-        }
-        .day-column ul {
-            list-style-type: none;
-            padding: 0;
-            max-height: 350px;
-            overflow-y: auto;
-        }
-        .day-column li {
-            background-color: #fff;
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-            margin-bottom: 8px;
-            border-radius: 4px;
-        }
-        .summary {
-            font-weight: bold;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid #ccc;
-        }
-        .summary span {
-            font-weight: normal;
-            background-color: #e9ecef;
-            padding: 2px 6px;
-            border-radius: 4px;
-        }
-        .actions {
-            margin-top: 8px;
-            display: flex;
-            gap: 8px;
-        }
-        .actions button {
-            padding: 4px 10px;
-            font-size: 12px;
-            border-radius: 4px;
-        }
-        .actions .edit-btn {
-            background-color: #ffc107;
-        }
-        .actions .edit-btn:hover {
-            background-color: #e0a800;
-        }
-        .actions .delete-btn {
-            background-color: #dc3545;
-        }
-        .actions .delete-btn:hover {
-            background-color: #c82333;
-        }
-
-        /* Estilos de Notificação */
-        .notification {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 15px 25px;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 16px;
-            font-weight: bold;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.5s, visibility 0.5s, top 0.5s;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .notification.show {
-            opacity: 1;
-            visibility: visible;
-            top: 40px;
-        }
-        .notification.success {
-            background-color: #28a745;
-        }
-        .notification.error {
-            background-color: #dc3545;
-        }
-        .notification.info {
-            background-color: #007bff;
-        }
-        .notification button {
-            border: 2px solid #fff;
-            background: transparent;
-            color: #fff;
-            padding: 8px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-    </style>
+    <link rel="stylesheet" href="assets/css/main.css">
 </head>
-<body>
+<body style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
 
-    <div id="notification-area" class="notification"></div>
+    <div id="notification-area"></div>
 
-    <div class="container">
+    <!-- Notificação PWA Install -->
+    <div id="pwa-install-banner" class="pwa-install-banner" style="display: none;">
+        <div class="pwa-install-content">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" fill="#007bff"/>
+                </svg>
+                <div>
+                    <strong>Instalar App</strong>
+                    <p style="margin: 0; font-size: 0.9rem; color: #666;">Instale o Sistema de Congressos em seu dispositivo para acesso rápido</p>
+                </div>
+            </div>
+            <div class="pwa-install-buttons">
+                <button id="pwa-install-btn" class="btn btn-primary">Instalar</button>
+                <button id="pwa-dismiss-btn" class="btn btn-secondary">Agora não</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tela de Boas-vindas (padrão) -->
+    <div id="welcome-screen" class="container text-center">
+        <div class="logo-professional">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 12C3 7.029 7.029 3 12 3s9 4.029 9 9-4.029 9-9 9-9-4.029-9-9z" stroke="#007bff" stroke-width="2"/>
+                <path d="M8 14l3 3 5-5" stroke="#007bff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <h1>Sistema de Controle de Congressos</h1>
+        <p class="text-muted" style="font-size: 1.2rem; margin-bottom: 2rem;">
+            Organize o transporte para congressos e assembleias de forma simples e eficiente
+        </p>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="#007bff" stroke-width="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6" stroke="#007bff" stroke-width="2"/>
+                        <line x1="8" y1="2" x2="8" y2="6" stroke="#007bff" stroke-width="2"/>
+                        <line x1="3" y1="10" x2="21" y2="10" stroke="#007bff" stroke-width="2"/>
+                    </svg>
+                </div>
+                <strong>Gerenciar Eventos</strong><br>
+                <small>Crie congressos de 3 dias ou assembleias de 1 dia</small>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="#007bff" stroke-width="2"/>
+                        <polyline points="14,2 14,8 20,8" stroke="#007bff" stroke-width="2"/>
+                        <line x1="16" y1="13" x2="8" y2="13" stroke="#007bff" stroke-width="2"/>
+                        <line x1="16" y1="17" x2="8" y2="17" stroke="#007bff" stroke-width="2"/>
+                    </svg>
+                </div>
+                <strong>Controlar Transporte</strong><br>
+                <small>Configure vans ou ônibus com suas capacidades</small>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="#007bff" stroke-width="2"/>
+                        <circle cx="9" cy="7" r="4" stroke="#007bff" stroke-width="2"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="#007bff" stroke-width="2"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="#007bff" stroke-width="2"/>
+                    </svg>
+                </div>
+                <strong>Organizar Passageiros</strong><br>
+                <small>Cadastre participantes e controle pagamentos</small>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <line x1="18" y1="20" x2="18" y2="10" stroke="#007bff" stroke-width="2"/>
+                        <line x1="12" y1="20" x2="12" y2="4" stroke="#007bff" stroke-width="2"/>
+                        <line x1="6" y1="20" x2="6" y2="14" stroke="#007bff" stroke-width="2"/>
+                    </svg>
+                </div>
+                <strong>Acompanhar Estatísticas</strong><br>
+                <small>Veja relatórios em tempo real por dia</small>
+            </div>
+        </div>
+
+        <div class="info-box congregation-info">
+            <div class="info-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="#1565c0" stroke-width="2"/>
+                    <polyline points="9,22 9,12 15,12 15,22" stroke="#1565c0" stroke-width="2"/>
+                </svg>
+            </div>
+            <h3>Para Congregações</h3>
+            <p>Sistema desenvolvido especialmente para congregações organizarem o transporte de membros para eventos religiosos de forma segura e organizada.</p>
+        </div>
+
+        <div class="action-buttons">
+            <a href="login.html" class="btn btn-primary btn-lg">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" stroke="currentColor" stroke-width="2"/>
+                    <polyline points="10,17 15,12 10,7" stroke="currentColor" stroke-width="2"/>
+                    <line x1="15" y1="12" x2="3" y2="12" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                Fazer Login
+            </a>
+            <a href="register.html" class="btn btn-success btn-lg">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="8.5" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+                    <line x1="20" y1="8" x2="20" y2="14" stroke="currentColor" stroke-width="2"/>
+                    <line x1="23" y1="11" x2="17" y2="11" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                Cadastrar Congregação
+            </a>
+        </div>
+
+        <div class="steps-container">
+            <h4>Como funciona:</h4>
+            <div class="steps-grid">
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <strong>Cadastre-se</strong><br>
+                    <small>Registre sua congregação</small>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <strong>Crie Eventos</strong><br>
+                    <small>Configure congressos ou assembleias</small>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <strong>Adicione Pessoas</strong><br>
+                    <small>Registre os passageiros</small>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">4</div>
+                    <strong>Organize</strong><br>
+                    <small>Veja relatórios e estatísticas</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção para usuários autenticados -->
+    <div id="authenticated-section" class="container" style="display: none;">
         <div id="auth-section" style="display: none;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+            <div class="d-flex justify-between align-center mb-4 p-3 bg-secondary" style="border-radius: 8px;">
                 <div>
                     <strong>Congregação:</strong> <span id="congregation-name"></span><br>
-                    <small style="color: #666;">Email: <span id="congregation-email"></span></small>
+                    <small class="text-muted">Email: <span id="congregation-email"></span></small>
                 </div>
-                <button id="logout-btn" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Sair</button>
-                <a href="arrangement.html" style="background: #007bff; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; margin-left: 10px;">Configurar Arranjo</a>
-            </div>
-        </div>
-        
-        <div id="login-required" style="display: none;">
-            <div style="text-align: center; padding: 40px; background: #f8f9fa; border-radius: 8px; margin-bottom: 20px;">
-                <h2>🔒 Acesso Restrito</h2>
-                <p>Para registrar passageiros, você precisa estar logado com uma congregação.</p>
-                <a href="login.html" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-right: 10px;">Fazer Login</a>
-                <a href="register.html" style="background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Cadastrar Congregação</a>
+                <div class="btn-group">
+                    <a href="arrangement.html" class="btn btn-primary">Configurar Arranjo</a>
+                    <button id="my-account-btn" class="btn btn-info">Minha Conta</button>
+                    <button id="logout-btn" class="btn btn-danger">Sair</button>
+                </div>
             </div>
         </div>
 
-        <h1>Controle de Passageiros - Congresso</h1>
+        <div class="text-center mb-4">
+            <div class="logo-professional">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 12C3 7.029 7.029 3 12 3s9 4.029 9 9-4.029 9-9 9-9-4.029-9-9z" stroke="#007bff" stroke-width="2"/>
+                    <path d="M8 14l3 3 5-5" stroke="#007bff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <h1>Sistema de Controle de Congressos</h1>
+            <p class="text-muted">Gerencie passageiros para congressos e assembleias de forma organizada</p>
+        </div>
+
+        <div id="year-event-selector" style="display: none;">
+            <div class="form-section">
+                <h2>Selecionar Ano e Evento</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="year-select">Ano:</label>
+                        <select id="year-select">
+                            <option value="">Selecione o ano</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <button id="new-event-btn" class="btn btn-primary" style="margin-top: 25px;">+ Novo Evento</button>
+                    </div>
+                </div>
+
+                <div id="events-list" style="display: none;">
+                    <h3>Eventos Salvos para o Ano Selecionado:</h3>
+                    <div id="events-grid" class="events-grid"></div>
+                </div>
+            </div>
+        </div>
 
         <div class="form-section" id="main-content" style="display: none;">
-            <h2>Configuração de Preços por Dia</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+            <div class="d-flex justify-between align-center mb-3">
+                <h2 class="m-0">Configuração de Preços por Dia</h2>
+                <button id="back-to-events-btn" class="btn btn-secondary">← Voltar para Eventos</button>
+            </div>
+            <div class="form-row">
                 <div class="form-group">
                     <label for="friday-price">Preço Sexta (R$):</label>
                     <input type="number" class="price-input" id="friday-price" value="50.00" step="0.01">
@@ -222,7 +223,7 @@
             </div>
         </div>
 
-        <div class="form-section">
+        <div class="form-section" style="display: none;" id="passenger-form">
             <h2 id="form-title">Adicionar Passageiro</h2>
             <div class="form-group">
                 <label for="name-input">Nome do Passageiro:</label>
@@ -240,538 +241,123 @@
                     <label><input type="checkbox" name="days" value="sunday"> Domingo </label>
                 </div>
             </div>
-            <button id="add-btn">Adicionar à Lista</button>
+            <button id="add-btn" class="btn btn-primary">Adicionar à Lista</button>
         </div>
 
         <div class="results-grid" id="results-grid" style="display: none;">
-            <div class="day-column" id="friday-col">
-                <h3>Sexta-feira</h3>
-                <ul id="friday-list"></ul>
-                <div class="summary">Total de Pessoas: <span id="friday-count">0</span></div>
-                <div class="summary">Total Arrecadado: <span id="friday-collected">R$ 0,00</span></div>
-                <div class="summary">Total a Receber: <span id="friday-pending">R$ 0,00</span></div>
-                <div class="summary"><span id="friday-vehicle-label">Vans Necessárias (16 vagas):</span> <span id="friday-vans">0</span></div>
+            <div class="day-section" id="friday-col">
+                <div class="day-header">
+                    <h3>Sexta-feira</h3>
+                </div>
+                <ul id="friday-list" class="passenger-list"></ul>
+                <div class="summary">
+                    <div class="summary-row"><span>Total de Pessoas:</span> <span id="friday-count">0</span></div>
+                    <div class="summary-row"><span>Total Arrecadado:</span> <span id="friday-collected">R$ 0,00</span></div>
+                    <div class="summary-row"><span>Total a Receber:</span> <span id="friday-pending">R$ 0,00</span></div>
+                    <div class="summary-row"><span id="friday-vehicle-label"></span> <span id="friday-vans">0</span></div>
+                </div>
             </div>
-            <div class="day-column" id="saturday-col">
-                <h3>Sábado</h3>
-                <ul id="saturday-list"></ul>
-                <div class="summary">Total de Pessoas: <span id="saturday-count">0</span></div>
-                <div class="summary">Total Arrecadado: <span id="saturday-collected">R$ 0,00</span></div>
-                <div class="summary">Total a Receber: <span id="saturday-pending">R$ 0,00</span></div>
-                <div class="summary"><span id="saturday-vehicle-label">Vans Necessárias (16 vagas):</span> <span id="saturday-vans">0</span></div>
+            <div class="day-section" id="saturday-col">
+                <div class="day-header">
+                    <h3>Sábado</h3>
+                </div>
+                <ul id="saturday-list" class="passenger-list"></ul>
+                <div class="summary">
+                    <div class="summary-row"><span>Total de Pessoas:</span> <span id="saturday-count">0</span></div>
+                    <div class="summary-row"><span>Total Arrecadado:</span> <span id="saturday-collected">R$ 0,00</span></div>
+                    <div class="summary-row"><span>Total a Receber:</span> <span id="saturday-pending">R$ 0,00</span></div>
+                    <div class="summary-row"><span id="saturday-vehicle-label"></span> <span id="saturday-vans">0</span></div>
+                </div>
             </div>
-            <div class="day-column" id="sunday-col">
-                <h3>Domingo</h3>
-                <ul id="sunday-list"></ul>
-                <div class="summary">Total de Pessoas: <span id="sunday-count">0</span></div>
-                <div class="summary">Total Arrecadado: <span id="sunday-collected">R$ 0,00</span></div>
-                <div class="summary">Total a Receber: <span id="sunday-pending">R$ 0,00</span></div>
-                <div class="summary"><span id="sunday-vehicle-label">Vans Necessárias (16 vagas):</span> <span id="sunday-vans">0</span></div>
+            <div class="day-section" id="sunday-col">
+                <div class="day-header">
+                    <h3>Domingo</h3>
+                </div>
+                <ul id="sunday-list" class="passenger-list"></ul>
+                <div class="summary">
+                    <div class="summary-row"><span>Total de Pessoas:</span> <span id="sunday-count">0</span></div>
+                    <div class="summary-row"><span>Total Arrecadado:</span> <span id="sunday-collected">R$ 0,00</span></div>
+                    <div class="summary-row"><span>Total a Receber:</span> <span id="sunday-pending">R$ 0,00</span></div>
+                    <div class="summary-row"><span id="sunday-vehicle-label"></span> <span id="sunday-vans">0</span></div>
+                </div>
             </div>
         </div>
     </div>
 
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/index.js"></script>
+
     <script>
-    let attendees = {
-        friday: [],
-        saturday: [],
-        sunday: []
-    };
+        // PWA Install functionality
+        let deferredPrompt;
+        const pwaInstallBanner = document.getElementById('pwa-install-banner');
+        const installBtn = document.getElementById('pwa-install-btn');
+        const dismissBtn = document.getElementById('pwa-dismiss-btn');
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+
+        // Listen for beforeinstallprompt event
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('beforeinstallprompt event fired');
+            e.preventDefault();
+            deferredPrompt = e;
+
+            // Don't show if already dismissed recently
+            const dismissed = localStorage.getItem('pwa-install-dismissed');
+            const dismissedTime = dismissed ? parseInt(dismissed) : 0;
+            const now = Date.now();
+            const oneWeek = 7 * 24 * 60 * 60 * 1000; // 1 week in milliseconds
+
+            if (now - dismissedTime > oneWeek) {
+                // Show install banner after a short delay
+                setTimeout(() => {
+                    pwaInstallBanner.style.display = 'block';
+                }, 3000);
+            }
+        });
+
+        // Install button click
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                pwaInstallBanner.style.display = 'none';
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`User response to the install prompt: ${outcome}`);
+                deferredPrompt = null;
+            }
+        });
+
+        // Dismiss button click
+        dismissBtn.addEventListener('click', () => {
+            pwaInstallBanner.style.display = 'none';
+            localStorage.setItem('pwa-install-dismissed', Date.now().toString());
+        });
+
+        // Hide banner when app is installed
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA was installed');
+            pwaInstallBanner.style.display = 'none';
+            localStorage.setItem('pwa-install-dismissed', Date.now().toString());
+        });
+
+        // Check if already running as PWA
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+        if (isStandalone) {
+            console.log('Running as PWA');
+            pwaInstallBanner.style.display = 'none';
+        }
+    </script>
     
-    let editingPassengerId = null;
-    let arrangement = {};
-
-    const nameInput = document.getElementById('name-input');
-    const amountInput = document.getElementById('amount-input');
-    const addBtn = document.getElementById('add-btn');
-    const dayCheckboxes = document.querySelectorAll('input[name="days"]');
-    const formTitle = document.getElementById('form-title');
-
-    const prices = {
-        friday: document.getElementById('friday-price'),
-        saturday: document.getElementById('saturday-price'),
-        sunday: document.getElementById('sunday-price')
-    };
-
-    const lists = {
-        friday: document.getElementById('friday-list'),
-        saturday: document.getElementById('saturday-list'),
-        sunday: document.getElementById('sunday-list')
-    };
-
-    const counts = {
-        friday: document.getElementById('friday-count'),
-        saturday: document.getElementById('saturday-count'),
-        sunday: document.getElementById('sunday-count')
-    };
-
-    const collectedTotals = {
-        friday: document.getElementById('friday-collected'),
-        saturday: document.getElementById('saturday-collected'),
-        sunday: document.getElementById('sunday-collected')
-    };
-
-    const pendingTotals = {
-        friday: document.getElementById('friday-pending'),
-        saturday: document.getElementById('saturday-pending'),
-        sunday: document.getElementById('sunday-pending')
-    };
-
-    const vans = {
-        friday: document.getElementById('friday-vans'),
-        saturday: document.getElementById('saturday-vans'),
-        sunday: document.getElementById('sunday-vans')
-    };
-
-    const currencyFormatter = new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-    });
-
-    const notificationArea = document.getElementById('notification-area');
-    let deferredInstallPrompt = null;
-
-    function showNotification(message, type = 'info', duration = 3000, showInstallButton = false) {
-        notificationArea.textContent = message;
-        notificationArea.className = `notification ${type} show`;
-
-        if (showInstallButton && deferredInstallPrompt) {
-            const installButton = document.createElement('button');
-            installButton.textContent = 'Instalar';
-            installButton.onclick = () => {
-                deferredInstallPrompt.prompt();
-                notificationArea.classList.remove('show');
-            };
-            notificationArea.appendChild(installButton);
-        }
-
-        if (duration !== 0) {
-            setTimeout(() => {
-                notificationArea.classList.remove('show');
-            }, duration);
-        }
-    }
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredInstallPrompt = e;
-        showNotification('Instale nosso app para uma melhor experiência!', 'info', 7000, true);
-    });
-
-    const API_URL = '/api/db';
-
-    async function saveData() {
-        const dataToSave = {
-            attendees: attendees,
-            prices: {
-                friday: prices.friday.value,
-                saturday: prices.saturday.value,
-                sunday: prices.sunday.value
-            }
-        };
-        try {
-            await fetch(API_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(dataToSave),
-            });
-        } catch (error) {
-            console.error('Failed to save data:', error);
-            showNotification('Erro ao salvar os dados. Verifique a conexão.', 'error');
-        }
-    }
-
-    async function loadData() {
-        try {
-            const response = await fetch(API_URL);
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            const data = await response.json();
-            attendees = data.attendees || { friday: [], saturday: [], sunday: [] };
-            if (data.prices) {
-                prices.friday.value = data.prices.friday;
-                prices.saturday.value = data.prices.saturday;
-                prices.sunday.value = data.prices.sunday;
-            }
-        } catch (error) {
-            console.error('Failed to load data:', error);
-        }
-    }
-
-    function resetForm() {
-        nameInput.value = '';
-        amountInput.value = '';
-        dayCheckboxes.forEach(checkbox => checkbox.checked = false);
-        addBtn.textContent = 'Adicionar à Lista';
-        formTitle.textContent = 'Adicionar Passageiro';
-        editingPassengerId = null;
-        nameInput.focus();
-    }
-
-    function deletePassenger(passengerId) {
-        if (!confirm('Tem certeza que deseja excluir este passageiro de todas as listas?')) {
-            return;
-        }
-        for (const day in attendees) {
-            attendees[day] = attendees[day].filter(p => p.id !== passengerId);
-        }
-        showNotification('Passageiro excluído com sucesso!', 'success');
-        updateDisplay();
-    }
-
-    function editPassenger(passengerId) {
-        let passengerToEdit = null;
-        for (const day in attendees) {
-            const found = attendees[day].find(p => p.id === passengerId);
-            if (found) {
-                passengerToEdit = found;
-                break;
-            }
-        }
-
-        if (!passengerToEdit) return;
-
-        nameInput.value = passengerToEdit.name;
-        amountInput.value = passengerToEdit.amountPaid;
-        dayCheckboxes.forEach(checkbox => {
-            checkbox.checked = attendees[checkbox.value].some(p => p.id === passengerId);
-        });
-
-        addBtn.textContent = 'Salvar Alterações';
-        formTitle.textContent = 'Editando Passageiro';
-        editingPassengerId = passengerId;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        nameInput.focus();
-    }
-
-    addBtn.addEventListener('click', () => {
-        const name = nameInput.value.trim();
-        const amountPaid = parseFloat(amountInput.value) || 0;
-        const selectedDays = Array.from(dayCheckboxes)
-            .filter(checkbox => checkbox.checked)
-            .map(checkbox => checkbox.value);
-
-        if (!name) {
-            showNotification('Por favor, insira o nome do passageiro.', 'error');
-            return;
-        }
-        if (selectedDays.length === 0) {
-            showNotification('Por favor, selecione pelo menos um dia.', 'error');
-            return;
-        }
-
-        if (editingPassengerId) {
-            for (const day in attendees) {
-                attendees[day] = attendees[day].filter(p => p.id !== editingPassengerId);
-            }
-        }
-
-        let totalOwed = 0;
-        selectedDays.forEach(day => {
-            totalOwed += parseFloat(prices[day].value) || 0;
-        });
-
-        const remainingBalance = totalOwed - amountPaid;
-        const passenger = {
-            id: editingPassengerId || Date.now(),
-            name: name,
-            amountPaid: amountPaid,
-            totalOwed: totalOwed,
-            remainingBalance: remainingBalance > 0 ? remainingBalance : 0
-        };
-
-        selectedDays.forEach(day => {
-            attendees[day].push(passenger);
-        });
-
-        updateDisplay();
-        resetForm();
-    });
-
-    document.querySelectorAll('.price-input').forEach(input => {
-        input.addEventListener('change', updateDisplay);
-    });
-
-    function updateDisplay() {
-        const allPassengers = {};
-
-        for (const day in attendees) {
-            attendees[day].forEach(p => {
-                if (!allPassengers[p.id]) {
-                    const selectedDaysOfPassenger = [];
-                    for (const d in attendees) {
-                        if (attendees[d].some(passenger => passenger.id === p.id)) {
-                            selectedDaysOfPassenger.push(d);
-                        }
-                    }
-                    let newTotalOwed = 0;
-                    selectedDaysOfPassenger.forEach(d => {
-                        newTotalOwed += parseFloat(prices[d].value) || 0;
-                    });
-                    p.totalOwed = newTotalOwed;
-                    const newRemaining = p.totalOwed - p.amountPaid;
-                    p.remainingBalance = newRemaining > 0 ? newRemaining : 0;
-                    allPassengers[p.id] = p;
-                }
-            });
-        }
-
-        for (const day in attendees) {
-            const listElement = lists[day];
-            listElement.innerHTML = '';
-            let dayTotalCollected = 0;
-            let dayTotalPending = 0;
-
-            attendees[day].sort((a, b) => a.name.localeCompare(b.name));
-
-            attendees[day].forEach(p => {
-                const listItem = document.createElement('li');
-                let statusText;
-                if (p.remainingBalance <= 0) {
-                    statusText = `<span style="color: green; font-weight: bold;">Pago ✔️</span>`;
-                } else {
-                    statusText = `<span style="color: red; font-weight: bold;">Falta: ${currencyFormatter.format(p.remainingBalance)} ❌</span>`;
-                }
-                
-                listItem.innerHTML = `
-                    <div style="font-weight: bold;">${p.name}</div>
-                    <div>(Pagou: ${currencyFormatter.format(p.amountPaid)} de ${currencyFormatter.format(p.totalOwed)})</div>
-                    <div>${statusText}</div>
-                    <div class="actions">
-                        <button class="edit-btn" onclick="editPassenger(${p.id})">Editar</button>
-                        <button class="delete-btn" onclick="deletePassenger(${p.id})">Excluir</button>
-                    </div>
-                `;
-                listElement.appendChild(listItem);
-
-                const priceForThisDay = parseFloat(prices[day].value) || 0;
-                const portionPaidForThisDay = p.totalOwed > 0 ? Math.min(p.amountPaid / p.totalOwed * priceForThisDay, priceForThisDay) : 0;
-                dayTotalCollected += portionPaidForThisDay;
-                dayTotalPending += priceForThisDay - portionPaidForThisDay;
-            });
-
-            counts[day].textContent = attendees[day].length;
-            collectedTotals[day].textContent = currencyFormatter.format(dayTotalCollected);
-            pendingTotals[day].textContent = currencyFormatter.format(dayTotalPending > 0 ? dayTotalPending : 0);
-            vans[day].textContent = attendees[day].length > 0 ? Math.ceil(attendees[day].length / (arrangement.seatCount || 16)) : 0;
-        }
-        saveData();
-    }
-    
-    let currentToken = null;
-    let currentCongregation = null;
-
-    function checkAuthentication() {
-        const token = localStorage.getItem('auth_token');
-        const congregation = localStorage.getItem('congregation');
-
-        if (token && congregation) {
-            currentToken = token;
-            currentCongregation = JSON.parse(congregation);
-            
-            fetch('/api/me', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    showAuthenticatedContent();
-                } else {
-                    showUnauthenticatedContent();
-                }
-            })
-            .catch(() => {
-                showUnauthenticatedContent();
-            });
-        } else {
-            showUnauthenticatedContent();
-        }
-    }
-
-    function showAuthenticatedContent() {
-        document.getElementById('auth-section').style.display = 'block';
-        document.getElementById('login-required').style.display = 'none';
-        document.getElementById('main-content').style.display = 'block';
-        document.getElementById('results-grid').style.display = 'grid';
-        
-        document.getElementById('congregation-name').textContent = currentCongregation.name;
-        document.getElementById('congregation-email').textContent = currentCongregation.email;
-    }
-
-    function showUnauthenticatedContent() {
-        document.getElementById('auth-section').style.display = 'none';
-        document.getElementById('login-required').style.display = 'block';
-        document.getElementById('main-content').style.display = 'none';
-        document.getElementById('results-grid').style.display = 'none';
-        
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('congregation');
-        currentToken = null;
-        currentCongregation = null;
-    }
-
-    function logout() {
-        if (currentToken) {
-            fetch('/api/logout', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${currentToken}`
-                }
-            })
-            .finally(() => {
-                showUnauthenticatedContent();
-                showNotification('Logout realizado com sucesso!', 'success');
-            });
-        } else {
-            showUnauthenticatedContent();
-        }
-    }
-
-    document.getElementById('logout-btn').addEventListener('click', logout);
-
-    function applyArrangement() {
-        const savedArrangement = localStorage.getItem('arrangement');
-        if (savedArrangement) {
-            arrangement = JSON.parse(savedArrangement);
-
-            const fridayCol = document.getElementById('friday-col');
-            const saturdayCol = document.getElementById('saturday-col');
-            const sundayCol = document.getElementById('sunday-col');
-            const fridayCheckbox = document.querySelector('input[name="days"][value="friday"]');
-            const saturdayCheckbox = document.querySelector('input[name="days"][value="saturday"]');
-            const sundayCheckbox = document.querySelector('input[name="days"][value="sunday"]');
-
-            if (arrangement.eventType === 'assembly') {
-                document.title = 'Controle de Passageiros para a Assembleia';
-                document.querySelector('h1').textContent = 'Controle de Passageiros - Assembleia';
-
-                // Para assembleia, esconde sábado e mostra só domingo
-                if (fridayCol) fridayCol.style.display = 'none';
-                if (saturdayCol) saturdayCol.style.display = 'none';
-                if (sundayCol) sundayCol.style.display = 'block';
-
-                if (fridayCheckbox) fridayCheckbox.parentElement.style.display = 'none';
-                if (saturdayCheckbox) saturdayCheckbox.parentElement.style.display = 'none';
-                if (sundayCheckbox) sundayCheckbox.parentElement.style.display = 'inline-block';
-
-                if (sundayCol) sundayCol.querySelector('h3').textContent = 'Assembleia - Domingo';
-                if (sundayCheckbox) sundayCheckbox.parentElement.querySelector('label').textContent = 'Assembleia';
-
-                // Atualiza os attendees para usar apenas domingo para assembleia
-                if (!attendees.sunday) attendees.sunday = [];
-                attendees.friday = [];
-                attendees.saturday = [];
-
-            } else { // congresso
-                document.title = 'Controle de Passageiros para o Congresso';
-                document.querySelector('h1').textContent = 'Controle de Passageiros - Congresso';
-
-                // Para congresso, mostra os 3 dias
-                if (fridayCol) {
-                    fridayCol.style.display = 'block';
-                    fridayCol.querySelector('h3').textContent = 'Sexta-feira';
-                }
-                if (saturdayCol) {
-                    saturdayCol.style.display = 'block';
-                    saturdayCol.querySelector('h3').textContent = 'Sábado';
-                }
-                if (sundayCol) {
-                    sundayCol.style.display = 'block';
-                    sundayCol.querySelector('h3').textContent = 'Domingo';
-                }
-
-                if (fridayCheckbox) {
-                    fridayCheckbox.parentElement.style.display = 'inline-block';
-                    fridayCheckbox.parentElement.querySelector('label').textContent = 'Sexta-feira';
-                }
-                if (saturdayCheckbox) {
-                    saturdayCheckbox.parentElement.style.display = 'inline-block';
-                    saturdayCheckbox.parentElement.querySelector('label').textContent = 'Sábado';
-                }
-                if (sundayCheckbox) {
-                    sundayCheckbox.parentElement.style.display = 'inline-block';
-                    sundayCheckbox.parentElement.querySelector('label').textContent = 'Domingo';
-                }
-            }
-
-            // Atualiza informações do veículo
-            const vehicleName = arrangement.vehicleType === 'van' ? 'Vans' : 'Ônibus';
-            const seatCount = arrangement.seatCount || 16;
-            const vehicleLabel = `${vehicleName} Necessárias (${seatCount} vagas):`;
-
-            // Atualiza os labels dos veículos
-            const fridayVehicleLabel = document.getElementById('friday-vehicle-label');
-            const saturdayVehicleLabel = document.getElementById('saturday-vehicle-label');
-            const sundayVehicleLabel = document.getElementById('sunday-vehicle-label');
-
-            if (fridayVehicleLabel) fridayVehicleLabel.textContent = vehicleLabel;
-            if (saturdayVehicleLabel) saturdayVehicleLabel.textContent = vehicleLabel;
-            if (sundayVehicleLabel) sundayVehicleLabel.textContent = vehicleLabel;
-
-            // Mostra informações do evento se disponível
-            if (arrangement.dates && arrangement.dates.length > 0) {
-                const eventInfo = document.createElement('div');
-                eventInfo.style.cssText = 'background: #e3f2fd; padding: 10px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #2196F3;';
-
-                if (arrangement.eventType === 'assembly') {
-                    const data = new Date(arrangement.dates[0].date + 'T00:00:00');
-                    const dataFormatada = data.toLocaleDateString('pt-BR', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    });
-                    eventInfo.innerHTML = `<strong>📅 Data da Assembleia:</strong> ${dataFormatada}`;
-                } else {
-                    let datesHtml = '<strong>📅 Datas do Congresso:</strong><br>';
-                    arrangement.dates.forEach(dateInfo => {
-                        const data = new Date(dateInfo.date + 'T00:00:00');
-                        const dataFormatada = data.toLocaleDateString('pt-BR');
-                        datesHtml += `• ${dateInfo.label}: ${dataFormatada}<br>`;
-                    });
-                    eventInfo.innerHTML = datesHtml;
-                }
-
-                // Adiciona informação do veículo
-                const vehicleInfo = document.createElement('div');
-                vehicleInfo.style.cssText = 'background: #f1f8e9; padding: 10px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #4caf50;';
-                const vehicleName = arrangement.vehicleType === 'van' ? 'Van' : 'Ônibus';
-                vehicleInfo.innerHTML = `<strong>🚌 Veículo:</strong> ${vehicleName} (${arrangement.seatCount} lugares)`;
-
-                const container = document.querySelector('.container');
-                const firstFormSection = container.querySelector('.form-section');
-                container.insertBefore(eventInfo, firstFormSection);
-                container.insertBefore(vehicleInfo, firstFormSection);
-            }
-        }
-    }
-
-    async function initialize() {
-        checkAuthentication();
-        applyArrangement();
-        if (currentToken) {
-            await loadData();
-            updateDisplay();
-        }
-    }
-
-    initialize();
-
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js')
-                .then(registration => {
-                    console.log('ServiceWorker registrado com sucesso:', registration);
-                })
-                .catch(error => {
-                    console.log('Falha ao registrar o ServiceWorker:', error);
-                });
-        });
-    }
-</script>
 </body>
 </html>
