@@ -106,29 +106,65 @@ async function loadAllEvents() {
     if (!token) return;
 
     try {
-        const response = await fetch('/api/events', {
-            method: 'GET',
+        // Primeiro busca os anos disponíveis
+        const yearsResponse = await fetch('/api/events/years', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         });
 
-        if (response.ok) {
-            allEvents = await response.json();
-            displayEvents(allEvents);
-            // Mostra a lista de eventos
-            document.getElementById('events-list').style.display = 'block';
+        if (yearsResponse.ok) {
+            const availableYears = await yearsResponse.json();
+            console.log('Anos disponíveis:', availableYears);
+
+            // Atualiza o seletor de anos
+            updateYearSelector(availableYears);
+
+            // Se há anos disponíveis, carrega o mais recente
+            if (availableYears.length > 0) {
+                currentYear = availableYears[0]; // Anos vêm ordenados DESC
+                document.getElementById('year-select').value = currentYear;
+                await loadEventsForYear(currentYear);
+            } else {
+                // Nenhum evento encontrado
+                updateEventsDisplay([]);
+                showNotification('Nenhum evento cadastrado ainda. Crie seu primeiro evento!', 'info');
+            }
         } else {
-            console.error('Erro ao carregar eventos:', response.status);
-            // Mostra lista vazia
-            displayEvents([]);
-            document.getElementById('events-list').style.display = 'block';
+            console.error('Erro ao carregar anos disponíveis:', yearsResponse.status);
+            updateEventsDisplay([]);
         }
     } catch (error) {
         console.error('Erro ao conectar com servidor:', error);
-        // Mostra lista vazia
-        displayEvents([]);
-        document.getElementById('events-list').style.display = 'block';
+        updateEventsDisplay([]);
+        showNotification('Erro de conexão. Verifique sua internet.', 'error');
+    }
+}
+
+function updateYearSelector(availableYears) {
+    const yearSelect = document.getElementById('year-select');
+    if (!yearSelect) return;
+
+    // Limpa opções atuais
+    yearSelect.innerHTML = '<option value="">Selecione um ano</option>';
+
+    // Adiciona anos disponíveis
+    availableYears.forEach(year => {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        yearSelect.appendChild(option);
+    });
+
+    // Se não há eventos, adiciona alguns anos comuns
+    if (availableYears.length === 0) {
+        const currentYear = new Date().getFullYear();
+        for (let year = currentYear - 1; year <= currentYear + 2; year++) {
+            const option = document.createElement('option');
+            option.value = year;
+            option.textContent = year;
+            yearSelect.appendChild(option);
+        }
     }
 }
 
@@ -278,7 +314,11 @@ function getDayName(day) {
     const dayNames = {
         'friday': 'Sexta-feira',
         'saturday': 'Sábado',
-        'sunday': 'Domingo'
+        'sunday': 'Domingo',
+        'day1': 'Primeiro dia',
+        'day2': 'Segundo dia',
+        'day3': 'Terceiro dia',
+        'assembly': 'Assembleia'
     };
     return dayNames[day] || day;
 }
@@ -323,19 +363,27 @@ async function selectEvent(eventId) {
 }
 
 function setupEventInterface(event) {
-    // Configura preços
+    // Configura preços baseado nos dias do evento
     const prices = event.prices;
-    document.getElementById('friday-price').value = prices.friday || '50.00';
-    document.getElementById('saturday-price').value = prices.saturday || '50.00';
-    document.getElementById('sunday-price').value = prices.sunday || '50.00';
+
+    if (event.event_type === 'assembly') {
+        // Para assembleia, usa preço único
+        const assemblyPrice = prices.sunday || prices.assembly || '50.00';
+        document.getElementById('sunday-price').value = assemblyPrice;
+    } else {
+        // Para congresso, configura todos os preços
+        document.getElementById('friday-price').value = prices.friday || prices.day1 || '50.00';
+        document.getElementById('saturday-price').value = prices.saturday || prices.day2 || '50.00';
+        document.getElementById('sunday-price').value = prices.sunday || prices.day3 || '50.00';
+    }
 
     // Configura checkboxes baseado no tipo de evento
     const dayCheckboxes = document.querySelectorAll('input[name="days"]');
 
     if (event.event_type === 'assembly') {
-        // Para assembleia, apenas domingo
+        // Para assembleia, apenas domingo/assembly
         dayCheckboxes.forEach(checkbox => {
-            if (checkbox.value === 'sunday') {
+            if (checkbox.value === 'sunday' || checkbox.value === 'assembly') {
                 checkbox.style.display = 'inline';
                 checkbox.parentElement.style.display = 'inline-block';
             } else {
@@ -354,7 +402,8 @@ function setupEventInterface(event) {
     // Atualiza labels de veículos
     const vehicleType = event.vehicle_type === 'van' ? 'Vans' : 'Ônibus';
     event.dates.forEach(dateInfo => {
-        const label = document.getElementById(`${dateInfo.day}-vehicle-label`);
+        const dayKey = mapEventDayToInterface(dateInfo.day);
+        const label = document.getElementById(`${dayKey}-vehicle-label`);
         if (label) {
             label.textContent = `${vehicleType} Necessárias (${event.seat_count} vagas):`;
         }
@@ -370,6 +419,20 @@ function setupEventInterface(event) {
         document.getElementById('saturday-col').style.display = 'block';
         document.getElementById('sunday-col').style.display = 'block';
     }
+}
+
+// Função para mapear dias do evento para interface
+function mapEventDayToInterface(eventDay) {
+    const dayMapping = {
+        'day1': 'friday',
+        'day2': 'saturday',
+        'day3': 'sunday',
+        'assembly': 'sunday',
+        'friday': 'friday',
+        'saturday': 'saturday',
+        'sunday': 'sunday'
+    };
+    return dayMapping[eventDay] || eventDay;
 }
 
 async function loadPassengers(eventId) {
@@ -412,7 +475,7 @@ async function loadPassengers(eventId) {
 }
 
 function displayPassengers(passengers) {
-    // Organiza passageiros por dia
+    // Organiza passageiros por dia de interface
     const passengersByDay = {
         friday: [],
         saturday: [],
@@ -421,7 +484,11 @@ function displayPassengers(passengers) {
 
     passengers.forEach(passenger => {
         passenger.days_attending.forEach(day => {
-            passengersByDay[day].push(passenger);
+            // Mapeia o dia do evento para dia da interface
+            const interfaceDay = mapEventDayToInterface(day);
+            if (passengersByDay[interfaceDay]) {
+                passengersByDay[interfaceDay].push(passenger);
+            }
         });
     });
 
