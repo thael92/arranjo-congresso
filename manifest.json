@@ -1,6 +1,6 @@
 {
-  "name": "Sistema de Controle de Congressos",
-  "short_name": "Congressos",
+  "name": "Sistema de Controle de CongressoBus",
+  "short_name": "CongressoBus",
   "description": "Organize o transporte para congressos e assembleias de forma simples e eficiente",
   "start_url": "/",
   "display": "standalone",
@@ -11,16 +11,16 @@
   "categories": ["business", "productivity"],
   "icons": [
     {
-      "src": "icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "src": "logo.png",
+      "sizes": "192x192 384x384 512x512",
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "logo.png",
-      "sizes": "512x512",
+      "sizes": "192x192 384x384 512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     }
   ]
 }
