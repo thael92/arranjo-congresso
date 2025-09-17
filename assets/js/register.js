@@ -15,17 +15,23 @@ function setLoading(isLoading) {
 
 function validateForm() {
     const name = document.getElementById('name').value.trim();
+    const congregationNumber = document.getElementById('congregation_number').value.trim();
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
 
-    if (!name || !email || !password || !confirmPassword) {
+    if (!name || !congregationNumber || !email || !password || !confirmPassword) {
         showMessage('Por favor, preencha todos os campos.');
         return false;
     }
 
     if (name.length < 3) {
         showMessage('O nome da congregação deve ter pelo menos 3 caracteres.');
+        return false;
+    }
+
+    if (congregationNumber.length < 3) {
+        showMessage('O número da congregação deve ter pelo menos 3 caracteres.');
         return false;
     }
 
@@ -57,6 +63,7 @@ registerForm.addEventListener('submit', async (e) => {
     }
 
     const name = document.getElementById('name').value.trim();
+    const congregationNumber = document.getElementById('congregation_number').value.trim();
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
 
@@ -69,7 +76,7 @@ registerForm.addEventListener('submit', async (e) => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ name, email, password }),
+            body: JSON.stringify({ name, congregation_number: congregationNumber, email, password }),
         });
 
         const data = await response.json();

@@ -180,23 +180,22 @@
             <p class="text-muted">Gerencie passageiros para congressos e assembleias de forma organizada</p>
         </div>
 
-        <div id="year-event-selector" style="display: none;">
+        <div id="events-selector" style="display: none;">
             <div class="form-section">
-                <h2>Selecionar Ano e Evento</h2>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="year-select">Ano:</label>
-                        <select id="year-select">
-                            <option value="">Selecione o ano</option>
-                        </select>
+                <h2>Seus Eventos</h2>
+                <div class="form-row" style="display: flex; gap: 1rem; align-items: end; margin-bottom: 1rem;">
+                    <div class="form-group" style="flex: 0 0 150px;">
+                        <label for="year-input">Ano para novo evento:</label>
+                        <input type="number" id="year-input" class="form-control" min="2020" max="2030" placeholder="Ex: 2025">
                     </div>
                     <div class="form-group">
-                        <button id="new-event-btn" class="btn btn-primary" style="margin-top: 25px;">+ Novo Evento</button>
+                        <button id="new-event-btn" class="btn btn-primary">+ Novo Evento</button>
+                        <button id="refresh-events-btn" class="btn btn-secondary">🔄 Atualizar Lista</button>
                     </div>
                 </div>
 
-                <div id="events-list" style="display: none;">
-                    <h3>Eventos Salvos para o Ano Selecionado:</h3>
+                <div id="events-list">
+                    <h3>Todos os Eventos:</h3>
                     <div id="events-grid" class="events-grid"></div>
                 </div>
             </div>
@@ -228,6 +227,11 @@
             <div class="form-group">
                 <label for="name-input">Nome do Passageiro:</label>
                 <input type="text" id="name-input" placeholder="Digite o nome completo">
+            </div>
+            <div class="form-group">
+                <label for="identification-input">Número da Congregação:</label>
+                <input type="text" id="identification-input" placeholder="Número de identificação da congregação" maxlength="20" readonly>
+                <small class="form-text text-muted">Número único da sua congregação (preenchido automaticamente)</small>
             </div>
             <div class="form-group">
                 <label for="amount-input">Valor Pago (R$):</label>

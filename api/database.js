@@ -31,6 +31,7 @@ const initDB = () => {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 event_id INTEGER NOT NULL,
                 name VARCHAR(100) NOT NULL,
+                identification_number VARCHAR(20) NOT NULL,
                 amount_paid DECIMAL(10,2) DEFAULT 0,
                 total_owed DECIMAL(10,2) NOT NULL,
                 days_attending TEXT NOT NULL,
@@ -41,7 +42,8 @@ const initDB = () => {
                 notes TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (event_id) REFERENCES events (id) ON DELETE CASCADE
+                FOREIGN KEY (event_id) REFERENCES events (id) ON DELETE CASCADE,
+                UNIQUE(event_id, identification_number)
             )`);
 
             // Tabela de congregações
@@ -49,6 +51,7 @@ const initDB = () => {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name VARCHAR(100) NOT NULL UNIQUE,
                 email VARCHAR(100) NOT NULL UNIQUE,
+                congregation_number VARCHAR(20) UNIQUE,
                 password_hash VARCHAR(255) NOT NULL,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )`);
@@ -65,7 +68,28 @@ const initDB = () => {
                 if (err) {
                     reject(err);
                 } else {
-                    resolve();
+                    // Adicionar coluna identification_number se não existir
+                    db.run(`ALTER TABLE passengers ADD COLUMN identification_number VARCHAR(20)`, (err) => {
+                        if (err && !err.message.includes('duplicate column name')) {
+                            console.log('Erro ao adicionar coluna identification_number:', err.message);
+                        }
+
+                        // Adicionar coluna congregation_number se não existir
+                        db.run(`ALTER TABLE congregations ADD COLUMN congregation_number VARCHAR(20)`, (err) => {
+                            if (err && !err.message.includes('duplicate column name')) {
+                                console.log('Erro ao adicionar coluna congregation_number:', err.message);
+                            }
+
+                            // Tentar criar constraint unique se não existir
+                            db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_passenger_event_id
+                                    ON passengers(event_id, identification_number)`, (err) => {
+                                if (err) {
+                                    console.log('Index já existe ou erro:', err.message);
+                                }
+                                resolve();
+                            });
+                        });
+                    });
                 }
             });
         });

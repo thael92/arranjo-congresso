@@ -36,6 +36,7 @@
             Configure os detalhes do seu evento (congressos de 3 dias ou assembleias de 1 dia) e defina o tipo de transporte.
             <div id="selected-year-info" style="margin-top: 0.5rem; padding: 0.5rem; background: rgba(0,123,255,0.1); border-radius: 4px; display: none;">
                 <strong>📅 Ano selecionado:</strong> <span id="selected-year-display"></span>
+                <br><small class="text-muted">As datas serão ajustadas automaticamente para este ano</small>
             </div>
         </div>
         <div class="form-group">
@@ -57,28 +58,28 @@
             <input type="number" class="form-control" id="seat-count" min="1" value="16">
         </div>
         <div class="form-group" id="single-date-group">
-            <label for="event-date" id="event-date-label">Data da Assembleia (Domingo)</label>
+            <label for="event-date" id="event-date-label">Data da Assembleia</label>
             <input type="date" class="form-control" id="event-date">
-            <small class="form-text text-muted" id="date-help">Selecione um domingo para a assembleia</small>
+            <small class="form-text text-muted" id="date-help">Selecione qualquer data para a assembleia</small>
         </div>
 
         <div class="form-group" id="congress-dates-group" style="display: none;">
             <label>Datas do Congresso (3 dias)</label>
             <div class="row">
                 <div class="col-4">
-                    <label for="friday-date">Sexta-feira:</label>
+                    <label for="friday-date">Primeiro dia:</label>
                     <input type="date" class="form-control" id="friday-date">
                 </div>
                 <div class="col-4">
-                    <label for="saturday-date">Sábado:</label>
+                    <label for="saturday-date">Segundo dia:</label>
                     <input type="date" class="form-control" id="saturday-date">
                 </div>
                 <div class="col-4">
-                    <label for="sunday-date">Domingo:</label>
+                    <label for="sunday-date">Terceiro dia:</label>
                     <input type="date" class="form-control" id="sunday-date">
                 </div>
             </div>
-            <small class="form-text text-muted">Selecione as três datas do congresso</small>
+            <small class="form-text text-muted">Selecione as três datas do congresso (podem ser quaisquer dias)</small>
         </div>
 
         <div class="form-group" id="event-dates-display" style="display: none;">

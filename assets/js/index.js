@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Verifica autenticação em segundo plano
         const isAuthenticated = await checkAuthentication();
         if (isAuthenticated) {
-            await loadAvailableYears();
+            await loadAllEvents();
         }
 
         setupEventListeners();
@@ -77,7 +77,7 @@ function showAuthenticatedView(congregation) {
     // Mostra seção autenticada
     document.getElementById('authenticated-section').style.display = 'block';
     document.getElementById('auth-section').style.display = 'block';
-    document.getElementById('year-event-selector').style.display = 'block';
+    document.getElementById('events-selector').style.display = 'block';
 
     // Atualiza informações da congregação
     document.getElementById('congregation-name').textContent = congregation.name;
@@ -91,55 +91,44 @@ function showUnauthenticatedView() {
     // Esconde seção autenticada
     document.getElementById('authenticated-section').style.display = 'none';
     document.getElementById('auth-section').style.display = 'none';
-    document.getElementById('year-event-selector').style.display = 'none';
+    document.getElementById('events-selector').style.display = 'none';
     document.getElementById('main-content').style.display = 'none';
     document.getElementById('passenger-form').style.display = 'none';
     document.getElementById('results-grid').style.display = 'none';
 }
 
 // ========================================
-// GERENCIAMENTO DE ANOS E EVENTOS
+// GERENCIAMENTO DE EVENTOS
 // ========================================
 
-async function loadAvailableYears() {
+async function loadAllEvents() {
     const token = localStorage.getItem('auth_token');
     if (!token) return;
 
     try {
-        const response = await fetch('/api/events/years', {
+        const response = await fetch('/api/events', {
+            method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         });
 
         if (response.ok) {
-            const years = await response.json();
-            updateYearSelector(years);
+            allEvents = await response.json();
+            displayEvents(allEvents);
+            // Mostra a lista de eventos
+            document.getElementById('events-list').style.display = 'block';
+        } else {
+            console.error('Erro ao carregar eventos:', response.status);
+            // Mostra lista vazia
+            displayEvents([]);
+            document.getElementById('events-list').style.display = 'block';
         }
     } catch (error) {
-        console.error('Erro ao carregar anos:', error);
-    }
-}
-
-function updateYearSelector(years) {
-    const yearSelect = document.getElementById('year-select');
-    yearSelect.innerHTML = '<option value="">Selecione o ano</option>';
-
-    // Adiciona anos existentes
-    years.forEach(year => {
-        const option = document.createElement('option');
-        option.value = year;
-        option.textContent = year;
-        yearSelect.appendChild(option);
-    });
-
-    // Adiciona ano atual se não existir
-    const currentYear = new Date().getFullYear();
-    if (!years.includes(currentYear)) {
-        const option = document.createElement('option');
-        option.value = currentYear;
-        option.textContent = `${currentYear} (Novo)`;
-        yearSelect.appendChild(option);
+        console.error('Erro ao conectar com servidor:', error);
+        // Mostra lista vazia
+        displayEvents([]);
+        document.getElementById('events-list').style.display = 'block';
     }
 }
 
@@ -314,7 +303,7 @@ async function selectEvent(eventId) {
         showNotification(`Evento "${event.event_name}" selecionado com sucesso!`, 'success');
 
         // Atualiza display para mostrar formulário de passageiros
-        document.getElementById('year-event-selector').style.display = 'none';
+        document.getElementById('events-selector').style.display = 'none';
         document.getElementById('main-content').style.display = 'block';
         document.getElementById('passenger-form').style.display = 'block';
 
@@ -467,6 +456,9 @@ function createPassengerListItem(passenger) {
 
     listItem.innerHTML = `
         <div class="passenger-name">${passenger.name}</div>
+        <div class="passenger-congregation">
+            <small class="text-muted">Congregação: ${passenger.identification_number || 'Não informado'}</small>
+        </div>
         <div class="passenger-payment">
             Pagou: R$ ${passenger.amount_paid.toFixed(2)} de R$ ${passenger.total_owed.toFixed(2)}
             ${remaining > 0 ? `<br>Falta: R$ ${remaining.toFixed(2)}` : ''}
@@ -508,10 +500,14 @@ async function addPassenger() {
     }
 
     const nameInput = document.getElementById('name-input');
+    const identificationInput = document.getElementById('identification-input');
     const amountInput = document.getElementById('amount-input');
     const dayCheckboxes = document.querySelectorAll('input[name="days"]:checked');
 
     const name = nameInput.value.trim();
+    // Usar número da congregação do localStorage
+    const congregation = JSON.parse(localStorage.getItem('congregation') || '{}');
+    const identificationNumber = congregation.congregation_number || '';
     const amountPaid = parseFloat(amountInput.value) || 0;
     const selectedDays = Array.from(dayCheckboxes).map(cb => cb.value);
 
@@ -527,6 +523,7 @@ async function addPassenger() {
         nameInput.focus();
         return;
     }
+
 
     if (selectedDays.length === 0) {
         showNotification('Por favor, selecione pelo menos um dia', 'error');
@@ -563,6 +560,7 @@ async function addPassenger() {
             },
             body: JSON.stringify({
                 name,
+                identification_number: identificationNumber,
                 amount_paid: amountPaid,
                 total_owed: totalOwed,
                 days_attending: selectedDays
@@ -748,6 +746,12 @@ function createEditPassengerModal(passenger) {
             </div>
 
             <div class="form-group">
+                <label for="edit-identification">Número da Congregação:</label>
+                <input type="text" id="edit-identification" class="form-control" value="${passenger.identification_number || ''}" readonly>
+                <small class="form-text text-muted">Número único da congregação (não editável)</small>
+            </div>
+
+            <div class="form-group">
                 <label for="edit-amount">Valor Pago (R$):</label>
                 <input type="number" id="edit-amount" class="form-control" value="${passenger.amount_paid}" step="0.01" min="0">
             </div>
@@ -795,6 +799,7 @@ async function savePassengerChanges(passengerId, modal) {
     }
 
     const name = modal.querySelector('#edit-name').value.trim();
+    const identificationNumber = modal.querySelector('#edit-identification').value.trim();
     const amountPaid = parseFloat(modal.querySelector('#edit-amount').value) || 0;
 
     const selectedDays = [];
@@ -825,6 +830,7 @@ async function savePassengerChanges(passengerId, modal) {
             },
             body: JSON.stringify({
                 name,
+                identification_number: identificationNumber,
                 amount_paid: amountPaid,
                 total_owed: totalOwed,
                 days_attending: selectedDays
@@ -851,9 +857,18 @@ async function savePassengerChanges(passengerId, modal) {
 
 function resetForm() {
     document.getElementById('name-input').value = '';
+    fillCongregationNumber();
     document.getElementById('amount-input').value = '';
     document.querySelectorAll('input[name="days"]').forEach(cb => cb.checked = false);
     document.getElementById('name-input').focus();
+}
+
+function fillCongregationNumber() {
+    const congregation = JSON.parse(localStorage.getItem('congregation') || '{}');
+    const identificationInput = document.getElementById('identification-input');
+    if (identificationInput && congregation.congregation_number) {
+        identificationInput.value = congregation.congregation_number;
+    }
 }
 
 function showNotification(message, type = 'info', duration = 3000) {
@@ -996,20 +1011,38 @@ function setupEventListeners() {
     const newEventBtn = document.getElementById('new-event-btn');
     if (newEventBtn) {
         newEventBtn.addEventListener('click', () => {
-            if (currentYear) {
-                localStorage.setItem('event_year', currentYear);
-                localStorage.setItem('creating_new_event', 'true');
-                showNotification('Redirecionando para configuração de evento...', 'info', 1000);
-                setTimeout(() => {
-                    window.location.href = 'arrangement.html';
-                }, 500);
-            } else {
-                showNotification('Selecione um ano primeiro', 'error');
-                const yearSelect = document.getElementById('year-select');
-                if (yearSelect) {
-                    yearSelect.focus();
-                }
+            const yearInput = document.getElementById('year-input');
+            const selectedYear = yearInput.value;
+
+            if (!selectedYear) {
+                showNotification('Por favor, digite o ano para o novo evento', 'error');
+                yearInput.focus();
+                return;
             }
+
+            const year = parseInt(selectedYear);
+            if (year < 2020 || year > 2030) {
+                showNotification('Ano deve estar entre 2020 e 2030', 'error');
+                yearInput.focus();
+                return;
+            }
+
+            // Salva o ano escolhido
+            localStorage.setItem('event_year', selectedYear);
+            localStorage.setItem('creating_new_event', 'true');
+            showNotification(`Criando evento para ${selectedYear}...`, 'info', 1000);
+            setTimeout(() => {
+                window.location.href = 'arrangement.html';
+            }, 500);
+        });
+    }
+
+    // Botão atualizar eventos
+    const refreshEventsBtn = document.getElementById('refresh-events-btn');
+    if (refreshEventsBtn) {
+        refreshEventsBtn.addEventListener('click', () => {
+            showNotification('Atualizando lista de eventos...', 'info', 1000);
+            loadAllEvents();
         });
     }
 
@@ -1035,7 +1068,7 @@ function setupEventListeners() {
         backBtn.addEventListener('click', () => {
             document.getElementById('main-content').style.display = 'none';
             document.getElementById('passenger-form').style.display = 'none';
-            document.getElementById('year-event-selector').style.display = 'block';
+            document.getElementById('events-selector').style.display = 'block';
             document.getElementById('results-grid').style.display = 'none';
             currentEvent = null;
             showNotification('Voltando para seleção de eventos', 'info', 1500);
@@ -1052,6 +1085,27 @@ function setupEventListeners() {
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', logout);
+    }
+
+    // Preencher número da congregação automaticamente
+    fillCongregationNumber();
+
+    // Preencher ano atual no campo de ano
+    const yearInput = document.getElementById('year-input');
+    if (yearInput && !yearInput.value) {
+        yearInput.value = new Date().getFullYear();
+    }
+
+    // Permitir Enter no campo de ano para criar evento
+    if (yearInput) {
+        yearInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const newEventBtn = document.getElementById('new-event-btn');
+                if (newEventBtn) {
+                    newEventBtn.click();
+                }
+            }
+        });
     }
 }
 
@@ -1092,6 +1146,12 @@ function createMyAccountModal(congregation) {
                 <div class="form-group">
                     <label for="account-name">Nome da Congregação:</label>
                     <input type="text" id="account-name" class="form-control" value="${congregation.name || ''}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="account-congregation-number">Número da Congregação:</label>
+                    <input type="text" id="account-congregation-number" class="form-control" value="${congregation.congregation_number || ''}" placeholder="Ex: SP-001 ou 12345" maxlength="20">
+                    <small class="form-text text-muted">Número único de identificação da sua congregação</small>
                 </div>
 
                 <div class="form-group">
@@ -1144,6 +1204,7 @@ async function saveAccountChanges(modal) {
     }
 
     const name = modal.querySelector('#account-name').value.trim();
+    const congregationNumber = modal.querySelector('#account-congregation-number').value.trim();
     const email = modal.querySelector('#account-email').value.trim();
     const password = modal.querySelector('#account-password').value;
     const confirmPassword = modal.querySelector('#account-confirm-password').value;
@@ -1169,6 +1230,10 @@ async function saveAccountChanges(modal) {
             email
         };
 
+        if (congregationNumber) {
+            updateData.congregation_number = congregationNumber;
+        }
+
         if (password) {
             updateData.password = password;
         }
@@ -1188,6 +1253,7 @@ async function saveAccountChanges(modal) {
             // Atualizar localStorage
             localStorage.setItem('congregation', JSON.stringify({
                 name: updatedData.name,
+                congregation_number: updatedData.congregation_number,
                 email: updatedData.email
             }));
 

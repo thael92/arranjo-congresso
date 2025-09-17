@@ -112,6 +112,12 @@ const registerValidation = [
         .withMessage('Nome deve ter entre 2 e 100 caracteres')
         .matches(/^[a-zA-ZÀ-ÿ\s]+$/)
         .withMessage('Nome deve conter apenas letras e espaços'),
+    body('congregation_number')
+        .trim()
+        .isLength({ min: 3, max: 20 })
+        .withMessage('Número da congregação deve ter entre 3 e 20 caracteres')
+        .matches(/^[0-9A-Za-z-]+$/)
+        .withMessage('Número da congregação deve conter apenas números, letras e traços'),
     body('email')
         .trim()
         .isEmail()
@@ -139,13 +145,19 @@ const loginValidation = [
 
 // Rota de cadastro de congregação
 app.post('/api/register', authLimiter, registerValidation, handleValidationErrors, async (req, res) => {
-    const { name, email, password } = req.body;
+    const { name, congregation_number, email, password } = req.body;
 
     try {
         // Verificar se o email já existe
-        const existingCongregation = await query('SELECT id FROM congregations WHERE email = ?', [email]);
-        if (existingCongregation.rows.length > 0) {
+        const existingEmail = await query('SELECT id FROM congregations WHERE email = ?', [email]);
+        if (existingEmail.rows.length > 0) {
             return res.status(400).json({ error: 'Email já está em uso' });
+        }
+
+        // Verificar se o número da congregação já existe
+        const existingNumber = await query('SELECT id FROM congregations WHERE congregation_number = ?', [congregation_number]);
+        if (existingNumber.rows.length > 0) {
+            return res.status(400).json({ error: 'Número da congregação já está em uso' });
         }
 
         // Hash da senha
@@ -153,13 +165,13 @@ app.post('/api/register', authLimiter, registerValidation, handleValidationError
 
         // Inserir nova congregação
         const result = await query(
-            'INSERT INTO congregations (name, email, password_hash) VALUES (?, ?, ?)',
-            [name, email, passwordHash]
+            'INSERT INTO congregations (name, congregation_number, email, password_hash) VALUES (?, ?, ?, ?)',
+            [name, congregation_number, email, passwordHash]
         );
 
-        res.status(201).json({ 
+        res.status(201).json({
             message: 'Congregação cadastrada com sucesso',
-            congregationId: result.insertId 
+            congregationId: result.insertId
         });
     } catch (error) {
         console.error('Erro no cadastro:', error);
@@ -216,6 +228,7 @@ app.post('/api/login', authLimiter, loginValidation, handleValidationErrors, asy
             congregation: {
                 id: congregationData.id,
                 name: congregationData.name,
+                congregation_number: congregationData.congregation_number,
                 email: congregationData.email
             }
         });
@@ -250,6 +263,13 @@ app.put('/api/me', authenticateToken, [
         .trim()
         .isLength({ min: 2, max: 100 })
         .withMessage('Nome deve ter entre 2 e 100 caracteres'),
+    body('congregation_number')
+        .optional()
+        .trim()
+        .isLength({ min: 3, max: 20 })
+        .withMessage('Número da congregação deve ter entre 3 e 20 caracteres')
+        .matches(/^[0-9A-Za-z-]+$/)
+        .withMessage('Número da congregação deve conter apenas números, letras e traços'),
     body('email')
         .isEmail()
         .normalizeEmail()
@@ -260,34 +280,56 @@ app.put('/api/me', authenticateToken, [
         .withMessage('Senha deve ter pelo menos 6 caracteres')
 ], handleValidationErrors, async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, congregation_number, email, password } = req.body;
         const congregationId = req.congregation.congregationId;
 
         // Verificar se email já existe (excluindo o próprio registro)
-        const existingCongregation = await query(
+        const existingEmail = await query(
             'SELECT id FROM congregations WHERE email = ? AND id != ?',
             [email, congregationId]
         );
 
-        if (existingCongregation.rows.length > 0) {
+        if (existingEmail.rows.length > 0) {
             return res.status(400).json({ error: 'Este email já está em uso por outra congregação' });
         }
 
-        let updateQuery = 'UPDATE congregations SET name = ?, email = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?';
-        let updateValues = [name, email, congregationId];
+        // Verificar se número da congregação já existe (excluindo o próprio registro)
+        if (congregation_number) {
+            const existingNumber = await query(
+                'SELECT id FROM congregations WHERE congregation_number = ? AND id != ?',
+                [congregation_number, congregationId]
+            );
+
+            if (existingNumber.rows.length > 0) {
+                return res.status(400).json({ error: 'Este número da congregação já está em uso' });
+            }
+        }
+
+        let updateQuery = 'UPDATE congregations SET name = ?, email = ?';
+        let updateValues = [name, email];
+
+        // Incluir número da congregação se fornecido
+        if (congregation_number) {
+            updateQuery += ', congregation_number = ?';
+            updateValues.push(congregation_number);
+        }
 
         // Se senha foi fornecida, incluir na atualização
         if (password) {
             const hashedPassword = await bcrypt.hash(password, 10);
-            updateQuery = 'UPDATE congregations SET name = ?, email = ?, password = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?';
-            updateValues = [name, email, hashedPassword, congregationId];
+            updateQuery += ', password_hash = ?';
+            updateValues.push(hashedPassword);
         }
+
+        updateQuery += ', updated_at = CURRENT_TIMESTAMP WHERE id = ?';
+        updateValues.push(congregationId);
 
         await query(updateQuery, updateValues);
 
         res.json({
             id: congregationId,
             name,
+            congregation_number,
             email,
             message: 'Dados atualizados com sucesso'
         });
@@ -463,6 +505,12 @@ app.post('/api/events/:eventId/passengers', authenticateToken, [
         .trim()
         .isLength({ min: 2, max: 100 })
         .withMessage('Nome deve ter entre 2 e 100 caracteres'),
+    body('identification_number')
+        .trim()
+        .isLength({ min: 7, max: 20 })
+        .withMessage('Número de identificação deve ter entre 7 e 20 caracteres')
+        .matches(/^[0-9.-]+$/)
+        .withMessage('Número de identificação deve conter apenas números, pontos e traços'),
     body('amount_paid')
         .isFloat({ min: 0 })
         .withMessage('Valor pago deve ser positivo'),
@@ -484,7 +532,19 @@ app.post('/api/events/:eventId/passengers', authenticateToken, [
             return res.status(404).json({ error: 'Evento não encontrado' });
         }
 
-        const { name, amount_paid, total_owed, days_attending, phone, email, notes } = req.body;
+        const { name, identification_number, amount_paid, total_owed, days_attending, phone, email, notes } = req.body;
+
+        // Verificar se já existe passageiro com mesmo número de identificação no evento
+        const existingPassenger = await query(
+            'SELECT id FROM passengers WHERE event_id = ? AND identification_number = ?',
+            [req.params.eventId, identification_number]
+        );
+
+        if (existingPassenger.rows.length > 0) {
+            return res.status(400).json({
+                error: 'Já existe um passageiro cadastrado com este número de identificação neste evento'
+            });
+        }
 
         // Determina status do pagamento
         let payment_status = 'pending';
@@ -496,11 +556,12 @@ app.post('/api/events/:eventId/passengers', authenticateToken, [
 
         const result = await query(
             `INSERT INTO passengers
-             (event_id, name, amount_paid, total_owed, days_attending, payment_status, phone, email, notes)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             (event_id, name, identification_number, amount_paid, total_owed, days_attending, payment_status, phone, email, notes)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 req.params.eventId,
                 name,
+                identification_number,
                 amount_paid,
                 total_owed,
                 JSON.stringify(days_attending),
@@ -527,6 +588,13 @@ app.put('/api/events/:eventId/passengers/:passengerId', authenticateToken, [
         .trim()
         .isLength({ min: 2, max: 100 })
         .withMessage('Nome deve ter entre 2 e 100 caracteres'),
+    body('identification_number')
+        .optional()
+        .trim()
+        .isLength({ min: 7, max: 20 })
+        .withMessage('Número de identificação deve ter entre 7 e 20 caracteres')
+        .matches(/^[0-9.-]+$/)
+        .withMessage('Número de identificação deve conter apenas números, pontos e traços'),
     body('amount_paid')
         .optional()
         .isFloat({ min: 0 })
@@ -561,7 +629,21 @@ app.put('/api/events/:eventId/passengers/:passengerId', authenticateToken, [
             return res.status(404).json({ error: 'Passageiro não encontrado' });
         }
 
-        const { name, amount_paid, total_owed, days_attending, phone, email, notes, seat_assigned } = req.body;
+        const { name, identification_number, amount_paid, total_owed, days_attending, phone, email, notes, seat_assigned } = req.body;
+
+        // Verificar se número de identificação já existe em outro passageiro do mesmo evento
+        if (identification_number !== undefined) {
+            const existingPassenger = await query(
+                'SELECT id FROM passengers WHERE event_id = ? AND identification_number = ? AND id != ?',
+                [req.params.eventId, identification_number, req.params.passengerId]
+            );
+
+            if (existingPassenger.rows.length > 0) {
+                return res.status(400).json({
+                    error: 'Já existe outro passageiro cadastrado com este número de identificação neste evento'
+                });
+            }
+        }
 
         // Determina status do pagamento se valores foram atualizados
         let payment_status = passenger.rows[0].payment_status;
@@ -582,6 +664,10 @@ app.put('/api/events/:eventId/passengers/:passengerId', authenticateToken, [
         if (name !== undefined) {
             setClause.push('name = ?');
             updateValues.push(name);
+        }
+        if (identification_number !== undefined) {
+            setClause.push('identification_number = ?');
+            updateValues.push(identification_number);
         }
         if (amount_paid !== undefined) {
             setClause.push('amount_paid = ?');

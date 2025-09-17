@@ -43,8 +43,8 @@ function ajustarCalendario() {
     if (tipoEvento === 'assembly') {
         singleDateGroup.style.display = 'block';
         congressDatesGroup.style.display = 'none';
-        document.getElementById('event-date-label').textContent = 'Data da Assembleia (Domingo)';
-        document.getElementById('date-help').textContent = 'Selecione um domingo para a assembleia';
+        document.getElementById('event-date-label').textContent = 'Data da Assembleia';
+        document.getElementById('date-help').textContent = 'Selecione qualquer data para a assembleia';
     } else {
         singleDateGroup.style.display = 'none';
         congressDatesGroup.style.display = 'block';
@@ -67,16 +67,16 @@ function mostrarDatasEvento() {
             let datesHtml = '<strong>Congresso:</strong><br>';
 
             if (fridayDateInput.value) {
-                const sexta = new Date(fridayDateInput.value + 'T00:00:00');
-                datesHtml += `• Sexta: ${formatarData(sexta)}<br>`;
+                const primeiroDia = new Date(fridayDateInput.value + 'T00:00:00');
+                datesHtml += `• Primeiro dia: ${formatarData(primeiroDia)}<br>`;
             }
             if (saturdayDateInput.value) {
-                const sabado = new Date(saturdayDateInput.value + 'T00:00:00');
-                datesHtml += `• Sábado: ${formatarData(sabado)}<br>`;
+                const segundoDia = new Date(saturdayDateInput.value + 'T00:00:00');
+                datesHtml += `• Segundo dia: ${formatarData(segundoDia)}<br>`;
             }
             if (sundayDateInput.value) {
-                const domingo = new Date(sundayDateInput.value + 'T00:00:00');
-                datesHtml += `• Domingo: ${formatarData(domingo)}`;
+                const terceiroDia = new Date(sundayDateInput.value + 'T00:00:00');
+                datesHtml += `• Terceiro dia: ${formatarData(terceiroDia)}`;
             }
 
             datesList.innerHTML = datesHtml;
@@ -87,64 +87,11 @@ function mostrarDatasEvento() {
     }
 }
 
-// Validação para assembleia (apenas domingos)
-eventDateInput.addEventListener('input', (e) => {
-    if (e.target.value) {
-        const dataSelecionada = new Date(e.target.value + 'T00:00:00');
-        const diaDaSemana = dataSelecionada.getDay();
-
-        if (diaDaSemana !== 0) {
-            showNotification('Para Assembleia, por favor, selecione um Domingo.', 'error');
-            e.target.value = '';
-            eventDatesDisplay.style.display = 'none';
-            return;
-        }
-    }
-    mostrarDatasEvento();
-});
-
-// Validações para congresso
-fridayDateInput.addEventListener('input', (e) => {
-    if (e.target.value) {
-        const dataSelecionada = new Date(e.target.value + 'T00:00:00');
-        const diaDaSemana = dataSelecionada.getDay();
-
-        if (diaDaSemana !== 5) {
-            showNotification('Para Sexta-feira, por favor, selecione uma Sexta.', 'error');
-            e.target.value = '';
-            return;
-        }
-    }
-    mostrarDatasEvento();
-});
-
-saturdayDateInput.addEventListener('input', (e) => {
-    if (e.target.value) {
-        const dataSelecionada = new Date(e.target.value + 'T00:00:00');
-        const diaDaSemana = dataSelecionada.getDay();
-
-        if (diaDaSemana !== 6) {
-            showNotification('Para Sábado, por favor, selecione um Sábado.', 'error');
-            e.target.value = '';
-            return;
-        }
-    }
-    mostrarDatasEvento();
-});
-
-sundayDateInput.addEventListener('input', (e) => {
-    if (e.target.value) {
-        const dataSelecionada = new Date(e.target.value + 'T00:00:00');
-        const diaDaSemana = dataSelecionada.getDay();
-
-        if (diaDaSemana !== 0) {
-            showNotification('Para Domingo, por favor, selecione um Domingo.', 'error');
-            e.target.value = '';
-            return;
-        }
-    }
-    mostrarDatasEvento();
-});
+// Event listeners para mostrar datas selecionadas
+eventDateInput.addEventListener('input', mostrarDatasEvento);
+fridayDateInput.addEventListener('input', mostrarDatasEvento);
+saturdayDateInput.addEventListener('input', mostrarDatasEvento);
+sundayDateInput.addEventListener('input', mostrarDatasEvento);
 
 eventTypeSelect.addEventListener('change', ajustarCalendario);
 
@@ -154,14 +101,14 @@ document.getElementById('save-arrangement').addEventListener('click', async () =
     const seatCount = document.getElementById('seat-count').value;
 
     let dates = [];
-    let eventYear = new Date().getFullYear();
+    let eventYear;
 
     if (eventType === 'assembly') {
         if (!eventDateInput.value) {
             showNotification('Por favor, selecione a data da assembleia.', 'error');
             return;
         }
-        dates = [{ date: eventDateInput.value, day: 'sunday', label: 'Assembleia' }];
+        dates = [{ date: eventDateInput.value, day: 'assembly', label: 'Assembleia' }];
         eventYear = new Date(eventDateInput.value).getFullYear();
     } else {
         if (!fridayDateInput.value || !saturdayDateInput.value || !sundayDateInput.value) {
@@ -169,14 +116,14 @@ document.getElementById('save-arrangement').addEventListener('click', async () =
             return;
         }
         dates = [
-            { date: fridayDateInput.value, day: 'friday', label: 'Sexta-feira' },
-            { date: saturdayDateInput.value, day: 'saturday', label: 'Sábado' },
-            { date: sundayDateInput.value, day: 'sunday', label: 'Domingo' }
+            { date: fridayDateInput.value, day: 'day1', label: 'Primeiro dia' },
+            { date: saturdayDateInput.value, day: 'day2', label: 'Segundo dia' },
+            { date: sundayDateInput.value, day: 'day3', label: 'Terceiro dia' }
         ];
         eventYear = new Date(fridayDateInput.value).getFullYear();
     }
 
-    // Verifica se é um ano específico selecionado
+    // Verifica se existe um ano pré-selecionado
     const savedYear = localStorage.getItem('event_year');
     if (savedYear) {
         eventYear = parseInt(savedYear);
@@ -338,23 +285,32 @@ function displaySelectedYear() {
     const savedYear = localStorage.getItem('event_year');
     const currentYear = new Date().getFullYear();
 
-    if (savedYear) {
+    // Se não há ano salvo, verifica se estamos criando um novo evento
+    const isCreatingNew = localStorage.getItem('creating_new_event');
+    let yearToShow = savedYear;
+
+    // Se não há ano específico, mas está criando novo evento, usa ano atual
+    if (!yearToShow && isCreatingNew) {
+        yearToShow = currentYear.toString();
+    }
+
+    if (yearToShow) {
         const yearInfo = document.getElementById('selected-year-info');
         const yearDisplay = document.getElementById('selected-year-display');
 
         if (yearInfo && yearDisplay) {
-            yearDisplay.textContent = savedYear;
+            const year = parseInt(yearToShow);
 
             // Destacar se for um ano futuro ou passado
-            if (parseInt(savedYear) > currentYear) {
+            if (year > currentYear) {
                 yearDisplay.style.color = '#28a745'; // Verde para futuro
-                yearDisplay.innerHTML = `${savedYear} <small>(ano futuro)</small>`;
-            } else if (parseInt(savedYear) < currentYear) {
+                yearDisplay.innerHTML = `${yearToShow} <small>(ano futuro)</small>`;
+            } else if (year < currentYear) {
                 yearDisplay.style.color = '#ffc107'; // Amarelo para passado
-                yearDisplay.innerHTML = `${savedYear} <small>(ano passado)</small>`;
+                yearDisplay.innerHTML = `${yearToShow} <small>(ano passado)</small>`;
             } else {
                 yearDisplay.style.color = '#007bff'; // Azul para atual
-                yearDisplay.innerHTML = `${savedYear} <small>(ano atual)</small>`;
+                yearDisplay.innerHTML = `${yearToShow} <small>(ano atual)</small>`;
             }
 
             yearInfo.style.display = 'block';
