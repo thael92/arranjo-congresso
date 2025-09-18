@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(start index.html)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(npm start)"
     ],
     "deny": [],
     "ask": []
