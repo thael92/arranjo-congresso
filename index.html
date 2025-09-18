@@ -4,33 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Controle de Congressos</title>
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#007bff">
-    <link rel="apple-touch-icon" href="logo.png">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
 
     <div id="notification-area"></div>
 
-    <!-- Notificação PWA Install -->
-    <div id="pwa-install-banner" class="pwa-install-banner" style="display: none;">
-        <div class="pwa-install-content">
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" fill="#007bff"/>
-                </svg>
-                <div>
-                    <strong>Instalar App</strong>
-                    <p style="margin: 0; font-size: 0.9rem; color: #666;">Instale o Sistema de Congressos em seu dispositivo para acesso rápido</p>
-                </div>
-            </div>
-            <div class="pwa-install-buttons">
-                <button id="pwa-install-btn" class="btn btn-primary">Instalar</button>
-                <button id="pwa-dismiss-btn" class="btn btn-secondary">Agora não</button>
-            </div>
-        </div>
-    </div>
 
     <!-- Tela de Boas-vindas (padrão) -->
     <div id="welcome-screen" class="container text-center">
@@ -103,7 +86,8 @@
                 </svg>
             </div>
             <h3>Para Congregações</h3>
-            <p>Sistema desenvolvido especialmente para congregações organizarem o transporte de membros para eventos religiosos de forma segura e organizada.</p>
+            <p>Sistema desenvolvido especialmente para congregações organizarem o transporte de irmãos para eventos como assembleias e congressos. O sistema oferece uma interface intuitiva e
+                 segura e organizada.</p>
         </div>
 
         <div class="action-buttons">
@@ -222,30 +206,147 @@
             </div>
         </div>
 
-        <div class="form-section" style="display: none;" id="passenger-form">
-            <h2 id="form-title">Adicionar Passageiro</h2>
-            <div class="form-group">
-                <label for="name-input">Nome do Passageiro:</label>
-                <input type="text" id="name-input" placeholder="Digite o nome completo">
-            </div>
-            <div class="form-group">
-                <label for="identification-input">Número da Congregação:</label>
-                <input type="text" id="identification-input" placeholder="Número de identificação da congregação" maxlength="20" readonly>
-                <small class="form-text text-muted">Número único da sua congregação (preenchido automaticamente)</small>
-            </div>
-            <div class="form-group">
-                <label for="amount-input">Valor Pago (R$):</label>
-                <input type="number" id="amount-input" placeholder="0.00" step="0.01">
-            </div>
-            <div class="form-group">
-                <label>Selecione os dias de participação:</label>
-                <div class="checkbox-group">
-                    <label><input type="checkbox" name="days" value="friday"> Sexta-feira</label>
-                    <label><input type="checkbox" name="days" value="saturday"> Sábado</label>
-                    <label><input type="checkbox" name="days" value="sunday"> Domingo </label>
+        <!-- Modal para Adicionar/Editar Passageiro -->
+        <div id="passenger-modal" class="modal" style="display: none;">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 id="modal-title">
+                            <i class="fa fa-user-plus"></i> Adicionar Passageiro
+                        </h3>
+                        <button class="btn-close" onclick="closePassengerModal()">&times;</button>
+                    </div>
+
+                    <form id="passenger-form" class="modal-body">
+                        <div class="form-section">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="form-group">
+                                        <label for="passenger-name">Nome Completo*</label>
+                                        <input type="text" id="passenger-name" class="form-control"
+                                               placeholder="Digite o nome completo" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="passenger-id">CPF/ID*</label>
+                                        <input type="text" id="passenger-id" class="form-control"
+                                               placeholder="000.000.000-00" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="passenger-phone">Telefone</label>
+                                        <input type="tel" id="passenger-phone" class="form-control"
+                                               placeholder="(11) 99999-9999">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="passenger-email">E-mail</label>
+                                        <input type="email" id="passenger-email" class="form-control"
+                                               placeholder="exemplo@email.com">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Dias de Participação*</label>
+                                <div id="days-selection" class="days-grid">
+                                    <!-- Será preenchido dinamicamente -->
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="amount-paid">Valor Pago (R$)*</label>
+                                        <input type="number" id="amount-paid" class="form-control"
+                                               min="0" step="0.01" value="0.00" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="total-owed">Valor Total (R$)*</label>
+                                        <input type="number" id="total-owed" class="form-control"
+                                               min="0" step="0.01" readonly>
+                                        <small class="text-muted">Calculado automaticamente</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="passenger-notes">Observações</label>
+                                <textarea id="passenger-notes" class="form-control" rows="2"
+                                          placeholder="Observações adicionais (opcional)"></textarea>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closePassengerModal()">
+                            <i class="fa fa-times"></i> Cancelar
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="savePassenger()">
+                            <i class="fa fa-save"></i> Salvar Passageiro
+                        </button>
+                    </div>
                 </div>
             </div>
-            <button id="add-btn" class="btn btn-primary">Adicionar à Lista</button>
+        </div>
+
+        <!-- Seção de Passageiros -->
+        <div id="passengers-section" style="display: none;">
+            <div class="section-header">
+                <h2 id="event-title">Gerenciar Passageiros</h2>
+                <button class="btn btn-primary" onclick="openPassengerModal()">
+                    <i class="fa fa-user-plus"></i> Adicionar Passageiro
+                </button>
+            </div>
+
+            <div class="passengers-container">
+                <div class="passengers-header">
+                    <div class="passengers-stats">
+                        <div class="stat-card">
+                            <span class="stat-number" id="total-passengers">0</span>
+                            <span class="stat-label">Total de Passageiros</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-number" id="total-collected">R$ 0,00</span>
+                            <span class="stat-label">Total Arrecadado</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-number" id="total-pending">R$ 0,00</span>
+                            <span class="stat-label">Total Pendente</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-number" id="vehicles-needed">0</span>
+                            <span class="stat-label" id="vehicles-label">Veículos</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="passengers-table">
+                    <table id="passengers-table">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Contato</th>
+                                <th>Dias</th>
+                                <th>Pagamento</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="passengers-tbody">
+                            <!-- Será preenchido dinamicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
         <div class="results-grid" id="results-grid" style="display: none;">
@@ -288,80 +389,9 @@
         </div>
     </div>
 
+    <script src="assets/js/session.js"></script>
     <script src="assets/js/main.js"></script>
     <script src="assets/js/index.js"></script>
-
-    <script>
-        // PWA Install functionality
-        let deferredPrompt;
-        const pwaInstallBanner = document.getElementById('pwa-install-banner');
-        const installBtn = document.getElementById('pwa-install-btn');
-        const dismissBtn = document.getElementById('pwa-dismiss-btn');
-
-        // Register Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(registration => {
-                        console.log('SW registered: ', registration);
-                    })
-                    .catch(registrationError => {
-                        console.log('SW registration failed: ', registrationError);
-                    });
-            });
-        }
-
-        // Listen for beforeinstallprompt event
-        window.addEventListener('beforeinstallprompt', (e) => {
-            console.log('beforeinstallprompt event fired');
-            e.preventDefault();
-            deferredPrompt = e;
-
-            // Don't show if already dismissed recently
-            const dismissed = localStorage.getItem('pwa-install-dismissed');
-            const dismissedTime = dismissed ? parseInt(dismissed) : 0;
-            const now = Date.now();
-            const oneWeek = 7 * 24 * 60 * 60 * 1000; // 1 week in milliseconds
-
-            if (now - dismissedTime > oneWeek) {
-                // Show install banner after a short delay
-                setTimeout(() => {
-                    pwaInstallBanner.style.display = 'block';
-                }, 3000);
-            }
-        });
-
-        // Install button click
-        installBtn.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                pwaInstallBanner.style.display = 'none';
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                console.log(`User response to the install prompt: ${outcome}`);
-                deferredPrompt = null;
-            }
-        });
-
-        // Dismiss button click
-        dismissBtn.addEventListener('click', () => {
-            pwaInstallBanner.style.display = 'none';
-            localStorage.setItem('pwa-install-dismissed', Date.now().toString());
-        });
-
-        // Hide banner when app is installed
-        window.addEventListener('appinstalled', () => {
-            console.log('PWA was installed');
-            pwaInstallBanner.style.display = 'none';
-            localStorage.setItem('pwa-install-dismissed', Date.now().toString());
-        });
-
-        // Check if already running as PWA
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-        if (isStandalone) {
-            console.log('Running as PWA');
-            pwaInstallBanner.style.display = 'none';
-        }
-    </script>
     
 </body>
 </html>

@@ -1,14 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(taskkill:*)",
-      "Bash(npm start)",
-      "Bash(sqlite3:*)",
-      "Bash(node:*)",
-      "Bash(curl:*)",
-      "Bash(netstat:*)",
-      "Bash(wmic process where:*)",
-      "Bash(npm install)"
+      "Bash(start index.html)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []

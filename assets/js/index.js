@@ -40,8 +40,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ========================================
 
 async function checkAuthentication() {
-    const token = localStorage.getItem('auth_token');
-    const congregation = localStorage.getItem('congregation');
+    const token = sessionManager.get('auth_token');
+    const congregation = sessionManager.get('congregation');
 
     if (!token || !congregation) {
         showUnauthenticatedView();
@@ -102,11 +102,15 @@ function showUnauthenticatedView() {
 // ========================================
 
 async function loadAllEvents() {
-    const token = localStorage.getItem('auth_token');
-    if (!token) return;
+    const token = sessionManager.get('auth_token');
+
+    if (!token) {
+        showNotification('Token de autenticação não encontrado', 'error');
+        return;
+    }
 
     try {
-        // Primeiro busca os anos disponíveis
+        // Buscar anos disponíveis do servidor local
         const yearsResponse = await fetch('/api/events/years', {
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -123,7 +127,10 @@ async function loadAllEvents() {
             // Se há anos disponíveis, carrega o mais recente
             if (availableYears.length > 0) {
                 currentYear = availableYears[0]; // Anos vêm ordenados DESC
-                document.getElementById('year-select').value = currentYear;
+                const yearSelect = document.getElementById('year-select');
+                if (yearSelect) {
+                    yearSelect.value = currentYear;
+                }
                 await loadEventsForYear(currentYear);
             } else {
                 // Nenhum evento encontrado
@@ -132,12 +139,13 @@ async function loadAllEvents() {
             }
         } else {
             console.error('Erro ao carregar anos disponíveis:', yearsResponse.status);
+            showNotification('Erro ao carregar anos do banco de dados', 'error');
             updateEventsDisplay([]);
         }
     } catch (error) {
-        console.error('Erro ao conectar com servidor:', error);
+        console.error('Erro ao conectar com servidor local:', error);
+        showNotification('Erro de conexão com servidor local. Verifique se está rodando na porta 3000.', 'error');
         updateEventsDisplay([]);
-        showNotification('Erro de conexão. Verifique sua internet.', 'error');
     }
 }
 
@@ -169,7 +177,7 @@ function updateYearSelector(availableYears) {
 }
 
 async function loadEventsForYear(year) {
-    const token = localStorage.getItem('auth_token');
+    const token = sessionManager.get('auth_token');
     if (!token) {
         showNotification('Token de autenticação não encontrado', 'error');
         return;
@@ -204,7 +212,7 @@ async function loadEventsForYear(year) {
         }
     } catch (error) {
         console.error('Erro ao carregar eventos:', error);
-        showNotification('Erro de conexão ao carregar eventos', 'error');
+        showNotification('Erro de conexão com servidor local. Verifique se está rodando na porta 3000.', 'error');
         events = [];
         updateEventsDisplay([]);
     }
@@ -259,6 +267,8 @@ function createEventCard(event) {
         const dayName = getDayName(dateInfo.day);
         return `<div><strong>${dayName}:</strong> ${date.toLocaleDateString('pt-BR')}</div>`;
     }).join('');
+
+    // Remover indicador local - todos os eventos são do banco SQLite local
 
     card.innerHTML = `
         <div class="event-title">
@@ -339,13 +349,9 @@ async function selectEvent(eventId) {
             return;
         }
 
-        currentEvent = event;
+        // Usar a nova interface de passageiros
+        showPassengersSection(event);
         showNotification(`Evento "${event.event_name}" selecionado com sucesso!`, 'success');
-
-        // Atualiza display para mostrar formulário de passageiros
-        document.getElementById('events-selector').style.display = 'none';
-        document.getElementById('main-content').style.display = 'block';
-        document.getElementById('passenger-form').style.display = 'block';
 
         // Configura interface baseada no tipo de evento
         setupEventInterface(event);
@@ -436,7 +442,7 @@ function mapEventDayToInterface(eventDay) {
 }
 
 async function loadPassengers(eventId) {
-    const token = localStorage.getItem('auth_token');
+    const token = sessionManager.get('auth_token');
     if (!token) {
         showNotification('Token de autenticação não encontrado', 'error');
         return;
@@ -572,8 +578,8 @@ async function addPassenger() {
     const dayCheckboxes = document.querySelectorAll('input[name="days"]:checked');
 
     const name = nameInput.value.trim();
-    // Usar número da congregação do localStorage
-    const congregation = JSON.parse(localStorage.getItem('congregation') || '{}');
+    // Usar número da congregação da sessão
+    const congregation = JSON.parse(sessionManager.get('congregation') || '{}');
     const identificationNumber = congregation.congregation_number || '';
     const amountPaid = parseFloat(amountInput.value) || 0;
     const selectedDays = Array.from(dayCheckboxes).map(cb => cb.value);
@@ -612,7 +618,7 @@ async function addPassenger() {
 
     const totalOwed = selectedDays.reduce((sum, day) => sum + prices[day], 0);
 
-    const token = localStorage.getItem('auth_token');
+    const token = sessionManager.get('auth_token');
     if (!token) {
         showNotification('Token de autenticação não encontrado', 'error');
         return;
@@ -649,7 +655,7 @@ async function addPassenger() {
 }
 
 async function editPassenger(passengerId) {
-    const token = localStorage.getItem('auth_token');
+    const token = sessionManager.get('auth_token');
     if (!token || !currentEvent) {
         showNotification('Erro: Token ou evento não encontrado', 'error');
         return;
@@ -712,7 +718,7 @@ async function deletePassenger(passengerId, button) {
 }
 
 async function executeDeletePassenger(passengerId) {
-    const token = localStorage.getItem('auth_token');
+    const token = sessionManager.get('auth_token');
     if (!token) {
         showNotification('Token de autenticação não encontrado', 'error');
         return;
@@ -750,7 +756,7 @@ async function executeDeletePassenger(passengerId) {
 async function updateStatistics() {
     if (!currentEvent) return;
 
-    const token = localStorage.getItem('auth_token');
+    const token = sessionManager.get('auth_token');
     if (!token) return;
 
     try {
@@ -859,7 +865,7 @@ function createEditPassengerModal(passenger) {
 }
 
 async function savePassengerChanges(passengerId, modal) {
-    const token = localStorage.getItem('auth_token');
+    const token = sessionManager.get('auth_token');
     if (!token || !currentEvent) {
         showNotification('Erro: Token ou evento não encontrado', 'error');
         return;
@@ -931,7 +937,7 @@ function resetForm() {
 }
 
 function fillCongregationNumber() {
-    const congregation = JSON.parse(localStorage.getItem('congregation') || '{}');
+    const congregation = JSON.parse(sessionManager.get('congregation') || '{}');
     const identificationInput = document.getElementById('identification-input');
     if (identificationInput && congregation.congregation_number) {
         identificationInput.value = congregation.congregation_number;
@@ -989,8 +995,8 @@ async function editEvent(eventId) {
     if (!event) return;
 
     // Salva dados para edição
-    localStorage.setItem('editing_event_id', eventId);
-    localStorage.setItem('editing_event_data', JSON.stringify(event));
+    sessionManager.set('editing_event_id', eventId);
+    sessionManager.set('editing_event_data', JSON.stringify(event));
 
     // Redireciona para página de arranjo
     window.location.href = 'arrangement.html';
@@ -1022,7 +1028,7 @@ async function deleteEvent(eventId, button) {
 }
 
 async function executeDeleteEvent(eventId) {
-    const token = localStorage.getItem('auth_token');
+    const token = sessionManager.get('auth_token');
     if (!token) {
         showNotification('Token de autenticação não encontrado', 'error');
         return;
@@ -1095,8 +1101,8 @@ function setupEventListeners() {
             }
 
             // Salva o ano escolhido
-            localStorage.setItem('event_year', selectedYear);
-            localStorage.setItem('creating_new_event', 'true');
+            sessionManager.set('event_year', selectedYear);
+            sessionManager.set('creating_new_event', 'true');
             showNotification(`Criando evento para ${selectedYear}...`, 'info', 1000);
             setTimeout(() => {
                 window.location.href = 'arrangement.html';
@@ -1177,7 +1183,7 @@ function setupEventListeners() {
 }
 
 function openMyAccountModal() {
-    const congregation = JSON.parse(localStorage.getItem('congregation') || '{}');
+    const congregation = JSON.parse(sessionManager.get('congregation') || '{}');
     const modal = createMyAccountModal(congregation);
     document.body.appendChild(modal);
     modal.style.display = 'flex';
@@ -1264,7 +1270,7 @@ function createMyAccountModal(congregation) {
 }
 
 async function saveAccountChanges(modal) {
-    const token = localStorage.getItem('auth_token');
+    const token = sessionManager.get('auth_token');
     if (!token) {
         showNotification('Token de autenticação não encontrado', 'error');
         return;
@@ -1317,8 +1323,8 @@ async function saveAccountChanges(modal) {
         if (response.ok) {
             const updatedData = await response.json();
 
-            // Atualizar localStorage
-            localStorage.setItem('congregation', JSON.stringify({
+            // Atualizar sessão
+            sessionManager.set('congregation', JSON.stringify({
                 name: updatedData.name,
                 congregation_number: updatedData.congregation_number,
                 email: updatedData.email
@@ -1341,7 +1347,7 @@ async function saveAccountChanges(modal) {
 }
 
 async function logout() {
-    const token = localStorage.getItem('auth_token');
+    const token = sessionManager.get('auth_token');
 
     try {
         if (token) {
@@ -1355,11 +1361,410 @@ async function logout() {
     } catch (error) {
         console.error('Erro no logout:', error);
     } finally {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('congregation');
+        sessionManager.remove('auth_token');
+        sessionManager.remove('congregation');
         showNotification('Logout realizado com sucesso!', 'success');
         setTimeout(() => {
             window.location.reload();
         }, 1000);
     }
+}
+
+// ========================================
+// NOVA INTERFACE DE PASSAGEIROS
+// ========================================
+
+let currentEvent = null;
+let editingPassenger = null;
+
+function openPassengerModal(passenger = null) {
+    const modal = document.getElementById('passenger-modal');
+    const title = document.getElementById('modal-title');
+
+    editingPassenger = passenger;
+
+    if (passenger) {
+        title.innerHTML = '<i class="fa fa-user-edit"></i> Editar Passageiro';
+        populatePassengerForm(passenger);
+    } else {
+        title.innerHTML = '<i class="fa fa-user-plus"></i> Adicionar Passageiro';
+        clearPassengerForm();
+    }
+
+    setupDaysSelection();
+    modal.style.display = 'flex';
+}
+
+function closePassengerModal() {
+    const modal = document.getElementById('passenger-modal');
+    modal.style.display = 'none';
+    clearPassengerForm();
+    editingPassenger = null;
+}
+
+function setupDaysSelection() {
+    if (!currentEvent || !currentEvent.dates) return;
+
+    const daysContainer = document.getElementById('days-selection');
+    daysContainer.innerHTML = '';
+
+    currentEvent.dates.forEach(dateInfo => {
+        const dayOption = document.createElement('div');
+        dayOption.className = 'day-option';
+        dayOption.onclick = () => toggleDay(dateInfo.day, dayOption);
+
+        dayOption.innerHTML = `
+            <input type="checkbox" id="day-${dateInfo.day}" value="${dateInfo.day}">
+            <div class="day-option-content">
+                <span class="day-option-label">${dateInfo.label}</span>
+                <span class="day-option-price">R$ ${currentEvent.prices[dateInfo.day]}</span>
+            </div>
+        `;
+
+        daysContainer.appendChild(dayOption);
+    });
+
+    // Adicionar listener para recalcular total
+    const amountPaid = document.getElementById('amount-paid');
+    amountPaid.addEventListener('input', calculateTotal);
+}
+
+function toggleDay(day, optionElement) {
+    const checkbox = optionElement.querySelector('input[type="checkbox"]');
+    checkbox.checked = !checkbox.checked;
+
+    if (checkbox.checked) {
+        optionElement.classList.add('selected');
+    } else {
+        optionElement.classList.remove('selected');
+    }
+
+    calculateTotal();
+}
+
+function calculateTotal() {
+    const selectedDays = getSelectedDays();
+    let total = 0;
+
+    selectedDays.forEach(day => {
+        total += parseFloat(currentEvent.prices[day] || 0);
+    });
+
+    document.getElementById('total-owed').value = total.toFixed(2);
+}
+
+function getSelectedDays() {
+    const checkboxes = document.querySelectorAll('#days-selection input[type="checkbox"]:checked');
+    return Array.from(checkboxes).map(cb => cb.value);
+}
+
+function populatePassengerForm(passenger) {
+    document.getElementById('passenger-name').value = passenger.name || '';
+    document.getElementById('passenger-id').value = passenger.identification_number || '';
+    document.getElementById('passenger-phone').value = passenger.phone || '';
+    document.getElementById('passenger-email').value = passenger.email || '';
+    document.getElementById('amount-paid').value = passenger.amount_paid || '0.00';
+    document.getElementById('total-owed').value = passenger.total_owed || '0.00';
+    document.getElementById('passenger-notes').value = passenger.notes || '';
+
+    // Selecionar dias após um pequeno delay para garantir que a UI foi criada
+    setTimeout(() => {
+        if (passenger.days_attending) {
+            const days = JSON.parse(passenger.days_attending);
+            days.forEach(day => {
+                const dayOption = document.querySelector(`#days-selection .day-option input[value="${day}"]`)?.parentElement;
+                if (dayOption) {
+                    dayOption.classList.add('selected');
+                    dayOption.querySelector('input').checked = true;
+                }
+            });
+        }
+    }, 100);
+}
+
+function clearPassengerForm() {
+    document.getElementById('passenger-name').value = '';
+    document.getElementById('passenger-id').value = '';
+    document.getElementById('passenger-phone').value = '';
+    document.getElementById('passenger-email').value = '';
+    document.getElementById('amount-paid').value = '0.00';
+    document.getElementById('total-owed').value = '0.00';
+    document.getElementById('passenger-notes').value = '';
+
+    // Limpar seleção de dias
+    document.querySelectorAll('.day-option').forEach(option => {
+        option.classList.remove('selected');
+        option.querySelector('input').checked = false;
+    });
+}
+
+async function savePassenger() {
+    const token = sessionManager.get('auth_token');
+    if (!token) {
+        showNotification('Erro: Usuário não autenticado', 'error');
+        return;
+    }
+
+    if (!currentEvent) {
+        showNotification('Erro: Nenhum evento selecionado', 'error');
+        return;
+    }
+
+    try {
+        const passengerData = collectPassengerData();
+
+        if (!validatePassengerData(passengerData)) {
+            return;
+        }
+
+        const isEditing = !!editingPassenger;
+        const url = isEditing
+            ? `/api/events/${currentEvent.id}/passengers/${editingPassenger.id}`
+            : `/api/events/${currentEvent.id}/passengers`;
+
+        const method = isEditing ? 'PUT' : 'POST';
+
+        showNotification('Salvando passageiro...', 'info');
+
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(passengerData)
+        });
+
+        if (response.ok) {
+            showNotification(
+                isEditing ? 'Passageiro atualizado com sucesso!' : 'Passageiro adicionado com sucesso!',
+                'success'
+            );
+            closePassengerModal();
+            await loadPassengers();
+        } else {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Erro ao salvar passageiro');
+        }
+    } catch (error) {
+        console.error('Erro ao salvar passageiro:', error);
+        showNotification(`Erro ao salvar passageiro: ${error.message}`, 'error');
+    }
+}
+
+function collectPassengerData() {
+    const selectedDays = getSelectedDays();
+
+    return {
+        name: document.getElementById('passenger-name').value.trim(),
+        identification_number: document.getElementById('passenger-id').value.trim(),
+        phone: document.getElementById('passenger-phone').value.trim() || null,
+        email: document.getElementById('passenger-email').value.trim() || null,
+        amount_paid: parseFloat(document.getElementById('amount-paid').value) || 0,
+        total_owed: parseFloat(document.getElementById('total-owed').value) || 0,
+        days_attending: selectedDays,
+        notes: document.getElementById('passenger-notes').value.trim() || null
+    };
+}
+
+function validatePassengerData(data) {
+    if (!data.name) {
+        showNotification('Por favor, informe o nome do passageiro', 'error');
+        return false;
+    }
+
+    if (!data.identification_number) {
+        showNotification('Por favor, informe o CPF/ID do passageiro', 'error');
+        return false;
+    }
+
+    if (!data.days_attending || data.days_attending.length === 0) {
+        showNotification('Por favor, selecione pelo menos um dia de participação', 'error');
+        return false;
+    }
+
+    if (data.amount_paid < 0) {
+        showNotification('O valor pago não pode ser negativo', 'error');
+        return false;
+    }
+
+    if (data.total_owed <= 0) {
+        showNotification('O valor total deve ser maior que zero', 'error');
+        return false;
+    }
+
+    return true;
+}
+
+async function loadPassengers() {
+    if (!currentEvent) return;
+
+    const token = sessionManager.get('auth_token');
+    if (!token) return;
+
+    try {
+        const response = await fetch(`/api/events/${currentEvent.id}/passengers`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            const passengers = await response.json();
+            updatePassengersDisplay(passengers);
+            updatePassengersStats(passengers);
+        } else {
+            console.error('Erro ao carregar passageiros');
+        }
+    } catch (error) {
+        console.error('Erro ao carregar passageiros:', error);
+    }
+}
+
+function updatePassengersDisplay(passengers) {
+    const tbody = document.getElementById('passengers-tbody');
+    tbody.innerHTML = '';
+
+    passengers.forEach(passenger => {
+        const tr = document.createElement('tr');
+
+        // Formatar dias de participação
+        const days = passenger.days_attending ? JSON.parse(passenger.days_attending) : [];
+        const daysFormatted = days.map(day => {
+            const dateInfo = currentEvent.dates.find(d => d.day === day);
+            return dateInfo ? dateInfo.label : day;
+        }).join(', ');
+
+        // Status do pagamento
+        let paymentStatus = 'pending';
+        if (passenger.amount_paid >= passenger.total_owed) {
+            paymentStatus = 'paid';
+        } else if (passenger.amount_paid > 0) {
+            paymentStatus = 'partial';
+        }
+
+        const statusLabels = {
+            'paid': 'Pago',
+            'partial': 'Parcial',
+            'pending': 'Pendente'
+        };
+
+        tr.innerHTML = `
+            <td>
+                <strong>${passenger.name}</strong><br>
+                <small class="text-muted">${passenger.identification_number}</small>
+            </td>
+            <td>
+                ${passenger.phone ? `<div><i class="fa fa-phone"></i> ${passenger.phone}</div>` : ''}
+                ${passenger.email ? `<div><i class="fa fa-envelope"></i> ${passenger.email}</div>` : ''}
+                ${!passenger.phone && !passenger.email ? '<span class="text-muted">Não informado</span>' : ''}
+            </td>
+            <td>${daysFormatted}</td>
+            <td>
+                <div>Pago: R$ ${parseFloat(passenger.amount_paid).toFixed(2)}</div>
+                <div>Total: R$ ${parseFloat(passenger.total_owed).toFixed(2)}</div>
+            </td>
+            <td>
+                <span class="status-badge status-${paymentStatus}">
+                    ${statusLabels[paymentStatus]}
+                </span>
+            </td>
+            <td>
+                <button class="btn btn-sm btn-warning" onclick="openPassengerModal(${JSON.stringify(passenger).replace(/"/g, '&quot;')})">
+                    <i class="fa fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="deletePassenger(${passenger.id})">
+                    <i class="fa fa-trash"></i>
+                </button>
+            </td>
+        `;
+
+        tbody.appendChild(tr);
+    });
+}
+
+function updatePassengersStats(passengers) {
+    const totalPassengers = passengers.length;
+    const totalCollected = passengers.reduce((sum, p) => sum + parseFloat(p.amount_paid), 0);
+    const totalOwed = passengers.reduce((sum, p) => sum + parseFloat(p.total_owed), 0);
+    const totalPending = totalOwed - totalCollected;
+
+    let vehiclesNeeded = 0;
+    if (currentEvent && passengers.length > 0) {
+        vehiclesNeeded = Math.ceil(passengers.length / currentEvent.seat_count);
+    }
+
+    const vehicleLabel = currentEvent?.vehicle_type === 'van' ? 'Vans' : 'Ônibus';
+
+    document.getElementById('total-passengers').textContent = totalPassengers;
+    document.getElementById('total-collected').textContent = `R$ ${totalCollected.toFixed(2)}`;
+    document.getElementById('total-pending').textContent = `R$ ${totalPending.toFixed(2)}`;
+    document.getElementById('vehicles-needed').textContent = vehiclesNeeded;
+    document.getElementById('vehicles-label').textContent = vehicleLabel;
+}
+
+async function deletePassenger(passengerId) {
+    if (!confirm('Tem certeza que deseja excluir este passageiro?')) {
+        return;
+    }
+
+    const token = sessionManager.get('auth_token');
+    if (!token) {
+        showNotification('Erro: Usuário não autenticado', 'error');
+        return;
+    }
+
+    try {
+        showNotification('Excluindo passageiro...', 'info');
+
+        const response = await fetch(`/api/events/${currentEvent.id}/passengers/${passengerId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            showNotification('Passageiro excluído com sucesso!', 'success');
+            await loadPassengers();
+        } else {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Erro ao excluir passageiro');
+        }
+    } catch (error) {
+        console.error('Erro ao excluir passageiro:', error);
+        showNotification(`Erro ao excluir passageiro: ${error.message}`, 'error');
+    }
+}
+
+// Função para mostrar a seção de passageiros
+function showPassengersSection(event) {
+    currentEvent = event;
+
+    // Esconder outras seções
+    document.getElementById('welcome-screen').style.display = 'none';
+    document.getElementById('events-selector').style.display = 'none';
+    document.getElementById('results-grid').style.display = 'none';
+
+    // Mostrar seção de passageiros
+    document.getElementById('passengers-section').style.display = 'block';
+
+    // Atualizar título
+    const eventTitle = document.getElementById('event-title');
+    eventTitle.textContent = `${event.event_name} - Passageiros`;
+
+    // Carregar passageiros
+    loadPassengers();
+}
+
+// Função para voltar à lista de eventos
+function backToEvents() {
+    // Esconder seção de passageiros
+    document.getElementById('passengers-section').style.display = 'none';
+
+    // Mostrar seção de eventos
+    document.getElementById('events-selector').style.display = 'block';
+
+    // Limpar evento atual
+    currentEvent = null;
 }

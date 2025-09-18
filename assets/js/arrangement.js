@@ -1,209 +1,170 @@
-const eventTypeSelect = document.getElementById('event-type');
-const singleDateGroup = document.getElementById('single-date-group');
-const congressDatesGroup = document.getElementById('congress-dates-group');
-const eventDateInput = document.getElementById('event-date');
-const fridayDateInput = document.getElementById('friday-date');
-const saturdayDateInput = document.getElementById('saturday-date');
-const sundayDateInput = document.getElementById('sunday-date');
-const eventDatesDisplay = document.getElementById('event-dates-display');
-const datesList = document.getElementById('dates-list');
-const notificationArea = document.getElementById('notification-area');
+document.addEventListener('DOMContentLoaded', function() {
+    // Elementos do formulário
+    const form = document.getElementById('event-form');
+    const eventTypeSelect = document.getElementById('event-type');
+    const eventYearSelect = document.getElementById('event-year');
 
-const diasSemana = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+    // Seções condicionais
+    const assemblyDates = document.getElementById('assembly-dates');
+    const congressDates = document.getElementById('congress-dates');
+    const assemblyPrices = document.getElementById('assembly-prices');
+    const congressPrices = document.getElementById('congress-prices');
 
-function showNotification(message, type = 'info', duration = 3000) {
-    notificationArea.textContent = message;
-    notificationArea.className = `notification ${type} show`;
+    // Inicializar
+    initializeYearSelect();
+    setupEventHandlers();
+    checkIfEditing();
 
-    if (duration !== 0) {
-        setTimeout(() => {
-            notificationArea.classList.remove('show');
-        }, duration);
-    }
-}
-
-function formatarData(data) {
-    const dia = data.getDate().toString().padStart(2, '0');
-    const mes = (data.getMonth() + 1).toString().padStart(2, '0');
-    const ano = data.getFullYear();
-    const diaSemana = diasSemana[data.getDay()];
-    return `${diaSemana}, ${dia}/${mes}/${ano}`;
-}
-
-function ajustarCalendario() {
-    const tipoEvento = eventTypeSelect.value;
-
-    // Limpa os campos
-    eventDateInput.value = '';
-    fridayDateInput.value = '';
-    saturdayDateInput.value = '';
-    sundayDateInput.value = '';
-    eventDatesDisplay.style.display = 'none';
-
-    if (tipoEvento === 'assembly') {
-        singleDateGroup.style.display = 'block';
-        congressDatesGroup.style.display = 'none';
-        document.getElementById('event-date-label').textContent = 'Data da Assembleia';
-        document.getElementById('date-help').textContent = 'Selecione qualquer data para a assembleia';
-    } else {
-        singleDateGroup.style.display = 'none';
-        congressDatesGroup.style.display = 'block';
-    }
-}
-
-function mostrarDatasEvento() {
-    const tipoEvento = eventTypeSelect.value;
-
-    if (tipoEvento === 'assembly') {
-        if (eventDateInput.value) {
-            const data = new Date(eventDateInput.value + 'T00:00:00');
-            datesList.innerHTML = `<strong>Assembleia:</strong><br>${formatarData(data)}`;
-            eventDatesDisplay.style.display = 'block';
-        } else {
-            eventDatesDisplay.style.display = 'none';
-        }
-    } else {
-        if (fridayDateInput.value || saturdayDateInput.value || sundayDateInput.value) {
-            let datesHtml = '<strong>Congresso:</strong><br>';
-
-            if (fridayDateInput.value) {
-                const primeiroDia = new Date(fridayDateInput.value + 'T00:00:00');
-                datesHtml += `• Primeiro dia: ${formatarData(primeiroDia)}<br>`;
+    function initializeYearSelect() {
+        const currentYear = new Date().getFullYear();
+        for (let year = currentYear - 2; year <= currentYear + 5; year++) {
+            const option = document.createElement('option');
+            option.value = year;
+            option.textContent = year;
+            if (year === currentYear) {
+                option.selected = true;
             }
-            if (saturdayDateInput.value) {
-                const segundoDia = new Date(saturdayDateInput.value + 'T00:00:00');
-                datesHtml += `• Segundo dia: ${formatarData(segundoDia)}<br>`;
-            }
-            if (sundayDateInput.value) {
-                const terceiroDia = new Date(sundayDateInput.value + 'T00:00:00');
-                datesHtml += `• Terceiro dia: ${formatarData(terceiroDia)}`;
-            }
-
-            datesList.innerHTML = datesHtml;
-            eventDatesDisplay.style.display = 'block';
-        } else {
-            eventDatesDisplay.style.display = 'none';
+            eventYearSelect.appendChild(option);
         }
     }
-}
 
-// Event listeners para mostrar datas selecionadas
-eventDateInput.addEventListener('input', mostrarDatasEvento);
-fridayDateInput.addEventListener('input', mostrarDatasEvento);
-saturdayDateInput.addEventListener('input', mostrarDatasEvento);
-sundayDateInput.addEventListener('input', mostrarDatasEvento);
+    function setupEventHandlers() {
+        // Mudar tipo de evento
+        eventTypeSelect.addEventListener('change', function() {
+            toggleEventSections();
+        });
 
-eventTypeSelect.addEventListener('change', ajustarCalendario);
+        // Submit do formulário
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveEvent();
+        });
+    }
 
-document.getElementById('save-arrangement').addEventListener('click', async () => {
-    const eventType = eventTypeSelect.value;
-    const vehicleType = document.getElementById('vehicle-type').value;
-    const seatCount = document.getElementById('seat-count').value;
+    function toggleEventSections() {
+        const eventType = eventTypeSelect.value;
 
-    let dates = [];
-    let eventYear;
+        if (eventType === 'assembly') {
+            // Mostrar seções da assembleia
+            assemblyDates.style.display = 'block';
+            congressDates.style.display = 'none';
+            assemblyPrices.style.display = 'block';
+            congressPrices.style.display = 'none';
+        } else if (eventType === 'congress') {
+            // Mostrar seções do congresso
+            assemblyDates.style.display = 'none';
+            congressDates.style.display = 'block';
+            assemblyPrices.style.display = 'none';
+            congressPrices.style.display = 'block';
+        } else {
+            // Esconder todas as seções
+            assemblyDates.style.display = 'none';
+            congressDates.style.display = 'none';
+            assemblyPrices.style.display = 'none';
+            congressPrices.style.display = 'none';
+        }
+    }
 
-    if (eventType === 'assembly') {
-        if (!eventDateInput.value) {
-            showNotification('Por favor, selecione a data da assembleia.', 'error');
+    function checkIfEditing() {
+        const editingEventId = sessionManager.get('editing_event_id');
+        const editingEventData = sessionManager.get('editing_event_data');
+
+        if (editingEventId && editingEventData) {
+            const eventData = JSON.parse(editingEventData);
+            populateForm(eventData);
+        }
+    }
+
+    function populateForm(eventData) {
+        document.getElementById('event-name').value = eventData.event_name || '';
+        document.getElementById('event-year').value = eventData.year || '';
+        document.getElementById('event-type').value = eventData.event_type || '';
+        document.getElementById('vehicle-type').value = eventData.vehicle_type || '';
+        document.getElementById('seat-count').value = eventData.seat_count || 16;
+
+        // Trigger mudança de tipo para mostrar seções corretas
+        toggleEventSections();
+
+        // Preencher datas e preços
+        if (eventData.dates && eventData.prices) {
+            if (eventData.event_type === 'assembly') {
+                const assemblyDate = eventData.dates[0];
+                if (assemblyDate) {
+                    document.getElementById('assembly-date').value = assemblyDate.date;
+                    document.getElementById('assembly-price').value = eventData.prices[assemblyDate.day] || '50.00';
+                }
+            } else if (eventData.event_type === 'congress') {
+                eventData.dates.forEach((dateInfo, index) => {
+                    const dayNum = index + 1;
+                    const dateInput = document.getElementById(`day${dayNum}-date`);
+                    const priceInput = document.getElementById(`day${dayNum}-price`);
+
+                    if (dateInput) {
+                        dateInput.value = dateInfo.date;
+                    }
+                    if (priceInput) {
+                        priceInput.value = eventData.prices[dateInfo.day] || '50.00';
+                    }
+                });
+            }
+        }
+    }
+
+    async function saveEvent() {
+        const token = sessionManager.get('auth_token');
+        if (!token) {
+            showNotification('Erro: Usuário não autenticado', 'error');
             return;
         }
-        dates = [{ date: eventDateInput.value, day: 'assembly', label: 'Assembleia' }];
-        eventYear = new Date(eventDateInput.value).getFullYear();
-    } else {
-        if (!fridayDateInput.value || !saturdayDateInput.value || !sundayDateInput.value) {
-            showNotification('Por favor, selecione todas as três datas do congresso.', 'error');
-            return;
-        }
-        dates = [
-            { date: fridayDateInput.value, day: 'day1', label: 'Primeiro dia' },
-            { date: saturdayDateInput.value, day: 'day2', label: 'Segundo dia' },
-            { date: sundayDateInput.value, day: 'day3', label: 'Terceiro dia' }
-        ];
-        eventYear = new Date(fridayDateInput.value).getFullYear();
-    }
 
-    // Verifica se existe um ano pré-selecionado
-    const savedYear = localStorage.getItem('event_year');
-    if (savedYear) {
-        eventYear = parseInt(savedYear);
-        localStorage.removeItem('event_year');
-    }
-
-    // Gerar nome do evento sempre incluindo o ano
-    const eventTypeText = eventType === 'assembly' ? 'Assembleia' : 'Congresso';
-    const monthName = new Date(dates[0].date).toLocaleDateString('pt-BR', { month: 'long' });
-
-    // Sempre incluir o ano no nome do evento para clareza
-    const eventName = `${eventTypeText} de ${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${eventYear}`;
-
-    // Verificar se está editando
-    const editingEventId = localStorage.getItem('editing_event_id');
-    const isEditing = !!editingEventId;
-
-    // Salvar no novo sistema
-    const token = localStorage.getItem('auth_token');
-    if (token) {
         try {
+            // Coletar dados do formulário
+            const eventData = collectFormData();
+
+            // Validar dados
+            if (!validateEventData(eventData)) {
+                return;
+            }
+
+            // Verificar se é edição ou criação
+            const editingEventId = sessionManager.get('editing_event_id');
+            const isEditing = !!editingEventId;
+
+            showNotification('Salvando evento...', 'info');
+
             let response;
-            let successMessage;
+            let url;
+            let method;
 
             if (isEditing) {
-                // Atualizar evento existente
-                response = await fetch(`/api/events/event/${editingEventId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        year: eventYear,
-                        event_type: eventType,
-                        event_name: eventName,
-                        dates: dates,
-                        vehicle_type: vehicleType,
-                        seat_count: parseInt(seatCount)
-                    })
-                });
-                successMessage = `${eventName} atualizado com sucesso!`;
+                url = `/api/events/event/${editingEventId}`;
+                method = 'PUT';
             } else {
-                // Criar novo evento
-                response = await fetch('/api/events', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        year: eventYear,
-                        event_type: eventType,
-                        event_name: eventName,
-                        dates: dates,
-                        vehicle_type: vehicleType,
-                        seat_count: parseInt(seatCount),
-                        attendees_data: { friday: [], saturday: [], sunday: [] },
-                        prices: { friday: '50.00', saturday: '50.00', sunday: '50.00' }
-                    })
-                });
-                successMessage = `${eventName} criado com sucesso!`;
+                url = '/api/events';
+                method = 'POST';
             }
 
+            response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(eventData)
+            });
+
             if (response.ok) {
+                const result = await response.json();
+
                 // Limpar dados de edição
-                localStorage.removeItem('editing_event_id');
-                localStorage.removeItem('editing_event_data');
+                sessionManager.remove('editing_event_id');
+                sessionManager.remove('editing_event_data');
 
-                // Compatibilidade com sistema antigo
-                const arrangement = {
-                    eventType,
-                    vehicleType,
-                    seatCount: parseInt(seatCount),
-                    dates,
-                    eventDate: dates[0].date
-                };
-                localStorage.setItem('arrangement', JSON.stringify(arrangement));
+                showNotification(
+                    isEditing ? 'Evento atualizado com sucesso!' : 'Evento criado com sucesso!',
+                    'success'
+                );
 
-                showNotification(successMessage, 'success');
                 setTimeout(() => {
                     window.location.href = 'index.html';
                 }, 1500);
@@ -215,108 +176,131 @@ document.getElementById('save-arrangement').addEventListener('click', async () =
             console.error('Erro ao salvar evento:', error);
             showNotification(`Erro ao salvar evento: ${error.message}`, 'error');
         }
-    } else {
-        // Fallback para sistema antigo
-        const arrangement = {
-            eventType,
-            vehicleType,
-            seatCount: parseInt(seatCount),
-            dates,
-            eventDate: dates[0].date
+    }
+
+    function collectFormData() {
+        const eventType = document.getElementById('event-type').value;
+
+        const baseData = {
+            year: parseInt(document.getElementById('event-year').value),
+            event_type: eventType,
+            event_name: document.getElementById('event-name').value,
+            vehicle_type: document.getElementById('vehicle-type').value,
+            seat_count: parseInt(document.getElementById('seat-count').value),
+            attendees_data: {},
+            prices: {}
         };
-        localStorage.setItem('arrangement', JSON.stringify(arrangement));
-        showNotification('Arranjo salvo com sucesso!', 'success');
-        setTimeout(() => {
-            window.location.href = 'index.html';
-        }, 1500);
-    }
 
-    localStorage.removeItem('creating_new_event');
-});
+        if (eventType === 'assembly') {
+            const date = document.getElementById('assembly-date').value;
+            const price = document.getElementById('assembly-price').value;
 
-// Verifica se está editando um evento
-function loadEditingData() {
-    const editingEventId = localStorage.getItem('editing_event_id');
-    const editingEventData = localStorage.getItem('editing_event_data');
+            baseData.dates = [
+                { day: 'sunday', date: date, label: 'Assembleia' }
+            ];
+            baseData.prices = { sunday: price };
+            baseData.attendees_data = { sunday: [] };
 
-    if (editingEventId && editingEventData) {
-        try {
-            const event = JSON.parse(editingEventData);
+        } else if (eventType === 'congress') {
+            const dates = [];
+            const prices = {};
+            const attendees_data = {};
 
-            // Preenche os campos com os dados do evento
-            document.getElementById('event-type').value = event.event_type;
-            document.getElementById('vehicle-type').value = event.vehicle_type;
-            document.getElementById('seat-count').value = event.seat_count;
+            const days = ['friday', 'saturday', 'sunday'];
+            const dayLabels = ['1º Dia', '2º Dia', '3º Dia'];
 
-            // Preenche as datas
-            if (event.event_type === 'assembly' && event.dates && event.dates.length > 0) {
-                document.getElementById('event-date').value = event.dates[0].date;
-            } else if (event.event_type === 'congress' && event.dates && event.dates.length >= 3) {
-                event.dates.forEach(dateInfo => {
-                    if (dateInfo.day === 'friday') {
-                        document.getElementById('friday-date').value = dateInfo.date;
-                    } else if (dateInfo.day === 'saturday') {
-                        document.getElementById('saturday-date').value = dateInfo.date;
-                    } else if (dateInfo.day === 'sunday') {
-                        document.getElementById('sunday-date').value = dateInfo.date;
-                    }
+            for (let i = 0; i < 3; i++) {
+                const date = document.getElementById(`day${i+1}-date`).value;
+                const price = document.getElementById(`day${i+1}-price`).value;
+
+                dates.push({
+                    day: days[i],
+                    date: date,
+                    label: dayLabels[i]
                 });
+
+                prices[days[i]] = price;
+                attendees_data[days[i]] = [];
             }
 
-            // Atualiza o título e botão
-            document.querySelector('h1').textContent = `Editando: ${event.event_name}`;
-            document.getElementById('save-arrangement').textContent = 'Salvar Alterações';
-
-            // Mostra as datas
-            mostrarDatasEvento();
-        } catch (error) {
-            console.error('Erro ao carregar dados de edição:', error);
-            showNotification('Erro ao carregar dados do evento para edição', 'error');
+            baseData.dates = dates;
+            baseData.prices = prices;
+            baseData.attendees_data = attendees_data;
         }
-    }
-}
 
-// Ajusta o calendário ao carregar a página
-ajustarCalendario();
-loadEditingData();
-
-// Mostrar ano selecionado
-function displaySelectedYear() {
-    const savedYear = localStorage.getItem('event_year');
-    const currentYear = new Date().getFullYear();
-
-    // Se não há ano salvo, verifica se estamos criando um novo evento
-    const isCreatingNew = localStorage.getItem('creating_new_event');
-    let yearToShow = savedYear;
-
-    // Se não há ano específico, mas está criando novo evento, usa ano atual
-    if (!yearToShow && isCreatingNew) {
-        yearToShow = currentYear.toString();
+        return baseData;
     }
 
-    if (yearToShow) {
-        const yearInfo = document.getElementById('selected-year-info');
-        const yearDisplay = document.getElementById('selected-year-display');
+    function validateEventData(data) {
+        // Validações básicas
+        if (!data.event_name.trim()) {
+            showNotification('Por favor, informe o nome do evento', 'error');
+            return false;
+        }
 
-        if (yearInfo && yearDisplay) {
-            const year = parseInt(yearToShow);
+        if (!data.year || data.year < 2020 || data.year > 2030) {
+            showNotification('Por favor, selecione um ano válido', 'error');
+            return false;
+        }
 
-            // Destacar se for um ano futuro ou passado
-            if (year > currentYear) {
-                yearDisplay.style.color = '#28a745'; // Verde para futuro
-                yearDisplay.innerHTML = `${yearToShow} <small>(ano futuro)</small>`;
-            } else if (year < currentYear) {
-                yearDisplay.style.color = '#ffc107'; // Amarelo para passado
-                yearDisplay.innerHTML = `${yearToShow} <small>(ano passado)</small>`;
-            } else {
-                yearDisplay.style.color = '#007bff'; // Azul para atual
-                yearDisplay.innerHTML = `${yearToShow} <small>(ano atual)</small>`;
+        if (!data.event_type) {
+            showNotification('Por favor, selecione o tipo de evento', 'error');
+            return false;
+        }
+
+        if (!data.vehicle_type) {
+            showNotification('Por favor, selecione o tipo de transporte', 'error');
+            return false;
+        }
+
+        if (!data.seat_count || data.seat_count < 1) {
+            showNotification('Por favor, informe a quantidade de lugares', 'error');
+            return false;
+        }
+
+        // Validar datas
+        if (!data.dates || data.dates.length === 0) {
+            showNotification('Por favor, informe as datas do evento', 'error');
+            return false;
+        }
+
+        for (let dateInfo of data.dates) {
+            if (!dateInfo.date) {
+                showNotification('Por favor, preencha todas as datas', 'error');
+                return false;
             }
-
-            yearInfo.style.display = 'block';
         }
-    }
-}
 
-// Executar ao carregar
-displaySelectedYear();
+        // Validar preços
+        for (let day in data.prices) {
+            const price = parseFloat(data.prices[day]);
+            if (isNaN(price) || price < 0) {
+                showNotification('Por favor, informe preços válidos', 'error');
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // Função para mostrar notificações
+    function showNotification(message, type) {
+        const notificationArea = document.getElementById('notification-area');
+
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+            <span>${message}</span>
+            <button onclick="this.parentElement.remove()">&times;</button>
+        `;
+
+        notificationArea.appendChild(notification);
+
+        // Auto remover após 5 segundos
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+});

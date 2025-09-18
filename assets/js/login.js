@@ -39,9 +39,9 @@ loginForm.addEventListener('submit', async (e) => {
         const data = await response.json();
 
         if (response.ok) {
-            // Salvar token no localStorage
-            localStorage.setItem('auth_token', data.token);
-            localStorage.setItem('congregation', JSON.stringify(data.congregation));
+            // Salvar token na sessão temporária
+            sessionManager.set('auth_token', data.token);
+            sessionManager.set('congregation', JSON.stringify(data.congregation));
             
             showMessage('Login realizado com sucesso! Redirecionando...', 'success');
             
@@ -62,7 +62,7 @@ loginForm.addEventListener('submit', async (e) => {
 
 // Verificar se já está logado
 window.addEventListener('load', () => {
-    const token = localStorage.getItem('auth_token');
+    const token = sessionManager.get('auth_token');
     if (token) {
         // Verificar se o token ainda é válido
         fetch('/api/me', {
@@ -77,8 +77,8 @@ window.addEventListener('load', () => {
         })
         .catch(() => {
             // Token inválido, remover
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('congregation');
+            sessionManager.remove('auth_token');
+            sessionManager.remove('congregation');
         });
     }
 });

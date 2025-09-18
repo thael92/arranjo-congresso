@@ -3,92 +3,191 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configuração de Evento - Controle de Congressos</title>
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#007bff">
-    <link rel="apple-touch-icon" href="logo.png">
+    <title>Novo Evento - CongressoBus</title>
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/main.css">
 </head>
-<body class="d-flex justify-center align-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+<body>
     <div id="notification-area"></div>
 
-    <div class="container" style="max-width: 800px;">
-        <div class="text-center mb-4">
-            <div class="logo-professional">
-                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="12" cy="12" r="3" stroke="#007bff" stroke-width="2"/>
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="#007bff" stroke-width="2"/>
-                </svg>
-            </div>
-            <h1>Configuração de Evento</h1>
-        </div>
-
-        <div class="info-box">
-            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="#1565c0" stroke-width="2"/>
-                    <line x1="16" y1="2" x2="16" y2="6" stroke="#1565c0" stroke-width="2"/>
-                    <line x1="8" y1="2" x2="8" y2="6" stroke="#1565c0" stroke-width="2"/>
-                    <line x1="3" y1="10" x2="21" y2="10" stroke="#1565c0" stroke-width="2"/>
-                </svg>
-                <strong>Configuração do Evento</strong>
-            </div>
-            Configure os detalhes do seu evento (congressos de 3 dias ou assembleias de 1 dia) e defina o tipo de transporte.
-            <div id="selected-year-info" style="margin-top: 0.5rem; padding: 0.5rem; background: rgba(0,123,255,0.1); border-radius: 4px; display: none;">
-                <strong>📅 Ano selecionado:</strong> <span id="selected-year-display"></span>
-                <br><small class="text-muted">As datas serão ajustadas automaticamente para este ano</small>
-            </div>
-        </div>
-        <div class="form-group">
-            <label for="event-type">Tipo de Evento</label>
-            <select class="form-control" id="event-type">
-                <option value="congress">Congresso (3 dias)</option>
-                <option value="assembly">Assembleia (Domingo)</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="vehicle-type">Tipo de Veículo</label>
-            <select class="form-control" id="vehicle-type">
-                <option value="van">Van</option>
-                <option value="bus">Ônibus</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="seat-count">Quantidade de Lugares</label>
-            <input type="number" class="form-control" id="seat-count" min="1" value="16">
-        </div>
-        <div class="form-group" id="single-date-group">
-            <label for="event-date" id="event-date-label">Data da Assembleia</label>
-            <input type="date" class="form-control" id="event-date">
-            <small class="form-text text-muted" id="date-help">Selecione qualquer data para a assembleia</small>
-        </div>
-
-        <div class="form-group" id="congress-dates-group" style="display: none;">
-            <label>Datas do Congresso (3 dias)</label>
-            <div class="row">
-                <div class="col-4">
-                    <label for="friday-date">Primeiro dia:</label>
-                    <input type="date" class="form-control" id="friday-date">
-                </div>
-                <div class="col-4">
-                    <label for="saturday-date">Segundo dia:</label>
-                    <input type="date" class="form-control" id="saturday-date">
-                </div>
-                <div class="col-4">
-                    <label for="sunday-date">Terceiro dia:</label>
-                    <input type="date" class="form-control" id="sunday-date">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Header -->
+            <div class="col-12">
+                <div class="header-simple">
+                    <button class="btn btn-ghost" onclick="window.location.href='index.html'">
+                        <i class="fa fa-arrow-left"></i> Voltar
+                    </button>
+                    <h1><i class="fa fa-plus-circle"></i> Novo Evento</h1>
                 </div>
             </div>
-            <small class="form-text text-muted">Selecione as três datas do congresso (podem ser quaisquer dias)</small>
         </div>
 
-        <div class="form-group" id="event-dates-display" style="display: none;">
-            <label>Datas Selecionadas:</label>
-            <div id="dates-list" class="alert alert-info"></div>
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <div class="card-modern">
+                    <form id="event-form">
+                        <!-- Informações Básicas -->
+                        <div class="form-section">
+                            <h3><i class="fa fa-info-circle"></i> Informações Básicas</h3>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="event-name">Nome do Evento*</label>
+                                        <input type="text" id="event-name" class="form-control"
+                                               placeholder="Ex: Congresso de Circuito 2025" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="event-year">Ano*</label>
+                                        <select id="event-year" class="form-control" required>
+                                            <option value="">Selecione o ano</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="event-type">Tipo de Evento*</label>
+                                        <select id="event-type" class="form-control" required>
+                                            <option value="">Selecione o tipo</option>
+                                            <option value="congress">Congresso (3 dias)</option>
+                                            <option value="assembly">Assembleia (1 dia)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="vehicle-type">Transporte*</label>
+                                        <select id="vehicle-type" class="form-control" required>
+                                            <option value="">Selecione o transporte</option>
+                                            <option value="van">Van</option>
+                                            <option value="bus">Ônibus</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="seat-count">Lugares Disponíveis*</label>
+                                        <input type="number" id="seat-count" class="form-control"
+                                               min="1" max="100" value="16" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Datas -->
+                        <div class="form-section" id="dates-section">
+                            <h3><i class="fa fa-calendar"></i> Datas do Evento</h3>
+
+                            <!-- Para Assembleia -->
+                            <div id="assembly-dates" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="assembly-date">Data da Assembleia*</label>
+                                            <input type="date" id="assembly-date" class="form-control">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Para Congresso -->
+                            <div id="congress-dates" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="day1-date">1º Dia*</label>
+                                            <input type="date" id="day1-date" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="day2-date">2º Dia*</label>
+                                            <input type="date" id="day2-date" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="day3-date">3º Dia*</label>
+                                            <input type="date" id="day3-date" class="form-control">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Preços -->
+                        <div class="form-section" id="prices-section">
+                            <h3><i class="fa fa-dollar-sign"></i> Preços</h3>
+
+                            <!-- Para Assembleia -->
+                            <div id="assembly-prices" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="assembly-price">Preço da Assembleia (R$)*</label>
+                                            <input type="number" id="assembly-price" class="form-control"
+                                                   min="0" step="0.01" value="50.00">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Para Congresso -->
+                            <div id="congress-prices" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="day1-price">Preço 1º Dia (R$)*</label>
+                                            <input type="number" id="day1-price" class="form-control"
+                                                   min="0" step="0.01" value="50.00">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="day2-price">Preço 2º Dia (R$)*</label>
+                                            <input type="number" id="day2-price" class="form-control"
+                                                   min="0" step="0.01" value="50.00">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="day3-price">Preço 3º Dia (R$)*</label>
+                                            <input type="number" id="day3-price" class="form-control"
+                                                   min="0" step="0.01" value="50.00">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="window.location.href='index.html'">
+                                <i class="fa fa-times"></i> Cancelar
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa fa-save"></i> Salvar Evento
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-        <button class="btn btn-primary" id="save-arrangement">Salvar Arranjo</button>
     </div>
 
+    <script src="assets/js/session.js"></script>
     <script src="assets/js/arrangement.js"></script>
 </body>
 </html>

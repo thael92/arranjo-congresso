@@ -104,7 +104,7 @@ registerForm.addEventListener('submit', async (e) => {
 
 // Verificar se já está logado
 window.addEventListener('load', () => {
-    const token = localStorage.getItem('auth_token');
+    const token = sessionManager.get('auth_token');
     if (token) {
         // Verificar se o token ainda é válido
         fetch('/api/me', {
@@ -119,8 +119,8 @@ window.addEventListener('load', () => {
         })
         .catch(() => {
             // Token inválido, remover
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('congregation');
+            sessionManager.remove('auth_token');
+            sessionManager.remove('congregation');
         });
     }
 });

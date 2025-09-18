@@ -628,8 +628,8 @@ class AuthManager {
     }
 
     checkAuthentication() {
-        const token = localStorage.getItem('auth_token');
-        const congregation = localStorage.getItem('congregation');
+        const token = sessionManager.get('auth_token');
+        const congregation = sessionManager.get('congregation');
 
         if (token && congregation) {
             this.appState.setAuth(token, JSON.parse(congregation));
@@ -696,8 +696,8 @@ class AuthManager {
         } catch (error) {
             console.error('Erro no logout:', error);
         } finally {
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('congregation');
+            sessionManager.remove('auth_token');
+            sessionManager.remove('congregation');
             this.appState.setAuth(null, null);
             this.notifications.show('Logout realizado com sucesso!', 'success');
             setTimeout(() => {
@@ -749,7 +749,7 @@ class App {
     }
 
     applyArrangement() {
-        const arrangement = JSON.parse(localStorage.getItem('arrangement') || 'null');
+        const arrangement = JSON.parse(sessionManager.get('arrangement') || 'null');
         if (arrangement) {
             this.appState.setArrangement(arrangement);
             this.updateArrangementDisplay(arrangement);

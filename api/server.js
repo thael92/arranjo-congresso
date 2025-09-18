@@ -49,9 +49,25 @@ const authLimiter = rateLimit({
     legacyHeaders: false,
 });
 
-// CORS configuration
+// CORS configuration - permitir qualquer origem local para facilitar desenvolvimento
 app.use(cors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    origin: function (origin, callback) {
+        // Permitir requisições sem origin (Postman, aplicativos mobile, etc.)
+        if (!origin) return callback(null, true);
+
+        // Permitir qualquer localhost ou file://
+        if (origin.startsWith('http://localhost') || origin.startsWith('https://localhost') || origin.startsWith('file://')) {
+            return callback(null, true);
+        }
+
+        // Para outros origins, usar configuração do .env ou rejeitar
+        const allowedOrigin = process.env.CORS_ORIGIN;
+        if (allowedOrigin && origin === allowedOrigin) {
+            return callback(null, true);
+        }
+
+        callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
     optionsSuccessStatus: 200
 }));
@@ -65,8 +81,20 @@ if (!JWT_SECRET) {
     process.exit(1);
 }
 
+// Middleware para desabilitar cache
+app.use((req, res, next) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    res.set('Surrogate-Control', 'no-store');
+    next();
+});
+
 // Serve os arquivos estáticos da pasta raiz do projeto
-app.use(express.static(path.join(__dirname, '..')));
+app.use(express.static(path.join(__dirname, '..'), {
+    maxAge: 0,
+    etag: false
+}));
 
 // Middleware de autenticação
 const authenticateToken = async (req, res, next) => {
@@ -321,7 +349,7 @@ app.put('/api/me', authenticateToken, [
             updateValues.push(hashedPassword);
         }
 
-        updateQuery += ', updated_at = CURRENT_TIMESTAMP WHERE id = ?';
+        updateQuery += ' WHERE id = ?';
         updateValues.push(congregationId);
 
         await query(updateQuery, updateValues);
